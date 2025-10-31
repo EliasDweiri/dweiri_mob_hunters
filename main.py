@@ -2,7 +2,7 @@
 # Mr. Cozort - created base code
 # ChatGPT - created Background_Flower_Field_1024x1024
 
-
+# yay I can use github from VS CODE!
 
 import math
 import random
