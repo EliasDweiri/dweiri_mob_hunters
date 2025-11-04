@@ -42,32 +42,43 @@ class Player(Sprite):
         self.jumping = False
         self.last_update = 0
 
-    def load_images(self):
-        self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
-                                self.spritesheet.get_image(0, 32, 32, 32)]
+    # def load_images(self): COME BACK TO THIS
+    #     self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
+    #                             self.spritesheet.get_image(0, 32, 32, 32)]
+
         # for frame in self.standing_frames:
         #     frame.set_colorkey(BLACK)
         # # self.walk_frames_r
         # # self.walk_frames_l
         # # pg.transform.flip
         
-    def animate(self):
-        now = pg.time.get_ticks()
-        if not self.jumping and not self.walking:
-            if now - self.last_update > 350:
-                print(now)
-                self.last_update = now
-                self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
-                bottom = self.rect.bottom
-                self.image = self.standing_frames[self.current_frame]
-                self.rect = self.image.get_rect()
-                self.rect.bottom = bottom
+    # def animate(self): COME BAKC TO THIS
+    #     now = pg.time.get_ticks()
+    #     if not self.jumping and not self.walking:
+    #         if now - self.last_update > 350:
+    #             print(now)
+    #             self.last_update = now
+    #             self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
+    #             bottom = self.rect.bottom
+    #             self.image = self.standing_frames[self.current_frame]
+    #             self.rect = self.image.get_rect()
+    #             self.rect.bottom = bottom
                     
 
 
-    def get_keys(self):
+    def get_keys(self, update):
         self.vel = vec(0, 0)
         keys = pg.key.get_pressed()
+
+        # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
+        if self.coins == 15:
+            if keys[pg.K_k]:
+                player_images = [
+                    update.image.load(self.player_img),
+                    update.image.load(self.spin_move2_img),
+                    update.image.load(self.spin_move3_img),
+                    update.image.load(self.spin_move4_img)
+                    ]
 
         # when space is pressed shoot a projectile
         if keys[pg.K_SPACE]:
@@ -167,7 +178,7 @@ class Player(Sprite):
 
     def update(self):
         self.get_keys()
-        self.animate()
+        # self.animate() COME BACK TO THIS
         # moves the player
         self.pos += self.vel
         self.rect.x = self.pos.x

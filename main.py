@@ -23,7 +23,7 @@ class Game:
         pg.init()
         self.clock = pg.time.Clock()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
-        pg.display.set_caption("Elias Dweiri's awesome game!!!!!")
+        pg.display.set_caption("Mob Hunters")
         self.playing = True
 
     # sets up a game folder directory path using the current folder containing this file
@@ -34,13 +34,18 @@ class Game:
         self.img_folder = path.join(self.game_folder, 'images')
         self.map = Map(path.join(self.game_folder, "level1.txt"))
 
-        # loads images into memory when a new game is created and load_data is called
+        # loads images into memory when a new game is created and load_data
         self.player_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.mob_img = pg.image.load(path.join(self.img_folder, "Coal_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.coin_img = pg.image.load(path.join(self.img_folder, "Emerald_Coin_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.wall_img = pg.image.load(path.join(self.img_folder, "Cobblestone_Wall_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.projectile_img = pg.image.load(path.join(self.img_folder, "Water_Projectile_16x16.png")).convert_alpha()  # PUT FILE HERE
         self.background_img = pg.image.load(path.join(self.img_folder, "Background_Flower_Field_1024x768.png")).convert_alpha()  # PUT FILE HERE
+        self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
+        self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
+        self.spin_move3_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r2.png")).convert_alpha()  # PUT FILE HERE
+        self.spin_move4_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r3.png")).convert_alpha()  # PUT FILE HERE
+
 
     def new(self):
         # the sprite Group allows us to update and draw sprite in grouped batches
@@ -110,8 +115,8 @@ class Game:
 
     def draw(self):
         # calls on draw_text
-        self.screen.fill(WHITE)
-        # self.screen.blit(self.background_img, (100, 100)) # IMG background
+        # self.screen.fill(WHITE) # white BAckground if needed
+        self.screen.blit(self.background_img, (0, 0)) # IMG background
         self.draw_text(self.screen, str(self.player.health), 24, BLACK, 100, 100)
         self.draw_text(self.screen, str(self.player.coins), 24, BLACK, 400, 100)
         self.draw_text(self.screen, str(self.time), 24, BLACK, 500, 100) 

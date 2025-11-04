@@ -15,3 +15,4 @@ GOLD = (255, 215, 0)
 # using a tuple to define a title size
 HEALTH = 100
 GREY = (128, 128, 128)
+# GRAVITY = -9.8 gravity is not needed in my game
