@@ -42,6 +42,8 @@ class Player(Sprite):
         self.jumping = False
         self.last_update = 0
 
+        self.attack_hitbox = None
+
     # def load_images(self): COME BACK TO THIS
     #     self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
     #                             self.spritesheet.get_image(0, 32, 32, 32)]
@@ -66,44 +68,58 @@ class Player(Sprite):
                     
 
 
-    def get_keys(self, update):
+    def draw_attack(self, surf):
+        if self.attack_hitbox:
+            pg.draw.rect(surf, (255, 200,60,140), (100,100,150,80))
+
+    # def draw_attack(self, surf):
+    #     if self.attack_hitbox:
+    #         pg.draw.rect(surf, (255, 200,60,140), self.attack_hitbox)
+
+    def get_keys(self):
         self.vel = vec(0, 0)
         keys = pg.key.get_pressed()
 
-        # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
-        if self.coins == 15:
-            if keys[pg.K_k]:
-                player_images = [
-                    update.image.load(self.player_img),
-                    update.image.load(self.spin_move2_img),
-                    update.image.load(self.spin_move3_img),
-                    update.image.load(self.spin_move4_img)
-                    ]
 
         # when space is pressed shoot a projectile
-        if keys[pg.K_SPACE]:
-            print(self.rect.x)
-            p = Projectile(self.game, self.rect.x, self.rect.y, self.dir)
         # when w is pressed the player moves up
         if keys[pg.K_w]:
             self.vel.y = -self.speed * self.game.dt
             self.dir = vec(0,-1)
             # self.rect.y -= self.speed
+
+
+        # one form of attacking
+        if keys[pg.K_p]:
+            p = Projectile(self.game, self.rect.x, self.rect.y, self.dir)
+
+
         # when a is pressed the player moves to the left
         if keys[pg.K_a]:
             self.vel.x = -self.speed * self.game.dt
             self.dir = vec(-1,0)
             # self.rect.x -= self.speed
+
+
         # when s is pressed the player moves down
         if keys[pg.K_s]:
             self.vel.y = self.speed * self.game.dt
             self.dir = vec(0,1)
+
+
             # self.rect.y += self.speed
         # when d is pressed the player moves to the right
         if keys[pg.K_d]:
             self.vel.x = self.speed * self.game.dt
             self.dir = vec(1,0)
-            # self.rect.x += self.speed
+
+        # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
+        if self.coins == 1:
+            if keys[pg.K_k]:
+                
+                print("trying to spin attack")
+
+          
         # accounting for diagonal movement
         if self.vel.x != 0 and self.vel[1] != 0:
             self.vel *= 0.7071
