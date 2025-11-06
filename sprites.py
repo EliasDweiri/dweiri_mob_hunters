@@ -98,6 +98,8 @@ class Player(Sprite):
         if keys[pg.K_a]:
             self.vel.x = -self.speed * self.game.dt
             self.dir = vec(-1,0)
+            
+
             # self.rect.x -= self.speed
 
 
@@ -194,6 +196,7 @@ class Player(Sprite):
 
     def update(self):
         self.get_keys()
+
         # self.animate() COME BACK TO THIS
         # moves the player
         self.pos += self.vel
@@ -203,7 +206,7 @@ class Player(Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls("y")
         # makes mob collide
-        self.collide_with_stuff(self.game.all_mobs, False)
+        self.collide_with_stuff(self.game.all_mobs, True)
         # makes coin disappear
         self.collide_with_stuff(self.game.all_coins, True)
         # if not self.cd.ready():

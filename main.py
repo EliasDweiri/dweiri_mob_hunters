@@ -32,6 +32,7 @@ class Game:
     def load_data(self):
         self.game_folder = path.dirname(__file__)
         self.img_folder = path.join(self.game_folder, 'images')
+        self.sound_folder = path.join(self.game_folder, 'sounds')
         self.map = Map(path.join(self.game_folder, "level1.txt"))
 
 
@@ -42,10 +43,18 @@ class Game:
         self.wall_img = pg.image.load(path.join(self.img_folder, "Cobblestone_Wall_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.projectile_img = pg.image.load(path.join(self.img_folder, "Water_Projectile_16x16.png")).convert_alpha()  # PUT FILE HERE
         self.background_img = pg.image.load(path.join(self.img_folder, "Background_Flower_Field_1024x768.png")).convert_alpha()  # PUT FILE HERE
+        self.player_running_left = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Left_32x32.png")).convert()
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move3_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r2.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move4_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r3.png")).convert_alpha()  # PUT FILE HERE
+
+
+        # MUSIC THEMES
+
+        pg.mixer.music.load(path.join(self.sound_folder, "Back_Ground_Theme_1.mp3"))
+        pg.mixer.music.set_volume(0.7)
+        pg.mixer.music.play(-1)
 
 
     def new(self):
