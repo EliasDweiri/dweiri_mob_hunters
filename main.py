@@ -31,9 +31,9 @@ class Game:
     # loads image files from images folder
     def load_data(self):
         self.game_folder = path.dirname(__file__)
-        self.img_folder = path.join(self.game_folder, 'images')
-        self.sound_folder = path.join(self.game_folder, 'sounds')
-        self.map = Map(path.join(self.game_folder, "level1.txt"))
+        self.img_folder = path.join(self.game_folder, 'images') # images folder
+        self.sound_folder = path.join(self.game_folder, 'sounds') # sound folder
+        self.map = Map(path.join(self.game_folder, "level1.txt")) # ttext map folder
 
 
         # loads images into memory when a new game is created and load_data
@@ -65,7 +65,8 @@ class Game:
         self.all_mobs = pg.sprite.Group()
         self.all_coins = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
-        self.all_projectiles = pg.sprite.Group() 
+        self.all_projectiles = pg.sprite.Group()
+        self.all_weapons = pg.sprite.Group()
 
         # takes the map data and creates the appropriate object for each tile
         for row, tiles in enumerate(self.map.data):
@@ -81,6 +82,7 @@ class Game:
                     self.player = Player(self, col, row)
                 elif tile == "M":
                     Mob(self, col, row)
+
 
     def run(self):
         # game loop

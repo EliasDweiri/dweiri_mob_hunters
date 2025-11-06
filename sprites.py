@@ -37,12 +37,21 @@ class Player(Sprite):
         self.coins = 0
         # cooldown
         self.cd = Cooldown(1000)
+        self.weapon_cd = Cooldown(400)
         self.dir = vec(0,0)
         self.walking = False
         self.jumping = False
         self.last_update = 0
+        self.current_frame = 0
 
         self.attack_hitbox = None
+
+
+        self.attacking = False
+
+        self.weapon = ""
+
+
 
     # def load_images(self): COME BACK TO THIS
     #     self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
@@ -68,9 +77,6 @@ class Player(Sprite):
                     
 
 
-    def draw_attack(self, surf):
-        if self.attack_hitbox:
-            pg.draw.rect(surf, (255, 200,60,140), (100,100,150,80))
 
     # def draw_attack(self, surf):
     #     if self.attack_hitbox:
@@ -116,7 +122,7 @@ class Player(Sprite):
             self.dir = vec(1,0)
 
         # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
-        if self.coins == 1:
+        # if self.coins == 1:
             if keys[pg.K_k]:
                 
                 print("trying to spin attack")
@@ -125,6 +131,18 @@ class Player(Sprite):
         # accounting for diagonal movement
         if self.vel.x != 0 and self.vel[1] != 0:
             self.vel *= 0.7071
+
+
+    def attack(self):
+        if not self.attacking and self.weapon_cd.ready():
+            self.weapon_cd.start()
+            self.attacking = True
+            print("im attacking")
+            self.weapon = Sword(self.game, self.rect.x, self.rect.y)
+            
+            
+            
+
 
     def get_dir(self):
         return self.vel
@@ -206,9 +224,24 @@ class Player(Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls("y")
         # makes mob collide
-        self.collide_with_stuff(self.game.all_mobs, True)
+        self.collide_with_stuff(self.game.all_mobs, False)
         # makes coin disappear
         self.collide_with_stuff(self.game.all_coins, True)
+
+
+        print(self.weapon_cd.ready())
+
+        if self.weapon_cd.ready():
+            if self.weapon != "":
+                self.weapon.kill()
+
+                
+
+        # if self.attacking:
+        #     Sword(self.game, self.rect.x, self.rect.y)
+
+
+
         # if not self.cd.ready():
         #     self.image_inv = self.game.player_img
         #     # self.rect = self.image.get_rect()
@@ -298,6 +331,28 @@ class Coin(Sprite):
         self.rect.y = y * TILESIZE[1]
         # coin behavior
         pass
+
+
+class Sword(Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self.groups = game.all_sprites, game.all_weapons
+        Sprite.__init__(self, self.groups)
+        self.image = pg.Surface((TILESIZE[0], TILESIZE[1]//2))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        # self.image.set_colorkey() USE THIS TO REMOVE A BACKGROUND ON A SPRITE
+        self.rect.x = x * TILESIZE[0]
+        self.rect.y = y * TILESIZE[1]
+        # coin behavior
+        
+    def update(self):
+        self.rect.x = self.game.player.rect.x + 32
+        self.rect.y = self.game.player.rect.y
+
+
+
+
  
 class Wall(Sprite):
     def __init__(self, game, x, y, state):
