@@ -1,8 +1,34 @@
-# SOURCES:
-# Mr. Cozort - created base code
-# ChatGPT - created Background_Flower_Field_1024x1024
+# Github: https://github.com/EliasDweiri/dweiri_mob_hunters
 
-# yay I can use github from VS CODE!
+
+# SOURCES:
+
+# Mr. Cozort - created base code - created spin move attack
+# ChatGPT - created Background_Flower_Field_1024x1024
+# Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
+
+# Game Music: 
+# 
+# found in https://opengameart.org/ 
+# - Sci-fi Puzzle In-Game 3 / Back_Ground_Theme_1
+
+# GOALS:
+
+# Mobs have collision between each other
+# A sort of wave system where mobs come in waves after they are killed
+# Different weapons
+# Complete Sprite retexture
+# Background change
+# Staring screen  ui to choose starting weapons and traits
+# Different levels/difficulties aftrer defeating mobs
+# updated screen health and coin amount counters
+# mobs have collission against weapons
+# Screen Text that tells what weapon you are currently using when clicked
+# walking animation
+# better mob pathing
+
+
+
 
 import math
 import random
@@ -53,7 +79,7 @@ class Game:
         # MUSIC THEMES
 
         pg.mixer.music.load(path.join(self.sound_folder, "Back_Ground_Theme_1.mp3"))
-        pg.mixer.music.set_volume(0.7)
+        pg.mixer.music.set_volume(0.5)
         pg.mixer.music.play(-1)
 
 
