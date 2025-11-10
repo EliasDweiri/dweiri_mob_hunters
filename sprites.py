@@ -123,9 +123,9 @@ class Player(Sprite):
 
         # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
         # if self.coins == 1:
-            if keys[pg.K_k]:
+        if keys[pg.K_k]:
                 
-                print("trying to spin attack")
+            print("trying to spin attack")
 
           
         # accounting for diagonal movement
@@ -299,6 +299,30 @@ class Mob(Sprite):
                 # bounces off in random direction
                 self.vel.y *= choice([-1,1])
 
+    # FIRST OPTION WORKED WELL
+    def collide_with_mobs(self, dir):
+    # Handle collisions between mobs
+        hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        for hit in hits:
+            if hit != self:  # Don't collide with self
+                if dir == "x":
+                    if self.vel.x > 0:
+                        self.pos.x = hit.rect.left - self.rect.width
+                    if self.vel.x < 0:
+                        self.pos.x = hit.rect.right
+                    self.vel.x *= choice([-1, 1])  # optional: bounce off
+                    self.rect.x = self.pos.x
+
+                if dir == "y":
+                    if self.vel.y > 0:
+                        self.pos.y = hit.rect.top - self.rect.height
+                    if self.vel.y < 0:
+                        self.pos.y = hit.rect.bottom
+                    self.vel.y *= choice([-1, 1])  # optional: bounce off
+                    self.rect.y = self.pos.y
+
+
+
     def update(self):
         # mob behavior
         if self.game.player.pos.x > self.pos.x:
@@ -316,6 +340,10 @@ class Mob(Sprite):
         self.collide_with_walls('x')
         self.rect.y = self.pos.y
         self.collide_with_walls('y')
+
+        # updating mob v mob collision
+        self.collide_with_mobs('x')
+        self.collide_with_mobs('y')
  
 class Coin(Sprite):
     def __init__(self, game, x, y):

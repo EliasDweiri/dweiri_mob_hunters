@@ -4,8 +4,9 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - created Background_Flower_Field_1024x1024
+# ChatGPT - created Background_Flower_Field_1024x1024, created mob v mob collision
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
+# Pathfinding - Found in https://medium.com/@aggorjefferson/building-an-a-pathfinding-visualizer-in-python-with-pygame-a2cb3502f49e
 
 # Game Music: 
 # 
@@ -14,7 +15,7 @@
 
 # GOALS:
 
-# Mobs have collision between each other
+# Mobs have collision between each other - COMPLETED
 # A sort of wave system where mobs come in waves after they are killed
 # Different weapons
 # Complete Sprite retexture
@@ -25,8 +26,7 @@
 # mobs have collission against weapons
 # Screen Text that tells what weapon you are currently using when clicked
 # walking animation
-# better mob pathing
-
+# better mob pathing 
 
 
 
@@ -39,7 +39,8 @@ from settings import *
 from sprites import *
 from utils import *
 from os import path
-from random import randint 
+from random import randint
+from queue import PriorityQueue
 
 
 
@@ -131,6 +132,7 @@ class Game:
                 print("I can get input from mousey mouse mouse mouskerson")
 
     def update(self):
+
         # creates a countdown timer
         self.all_sprites.update()
         seconds = pg.time.get_ticks() // 1000
@@ -138,7 +140,7 @@ class Game:
         self.time = countdown - seconds
         # once there are no coins left, spawns more coins
         if len(self.all_coins) == 0:
-            for i in range(2, 5):
+            for i in range(2, 7):
                 Coin(self, randint(1, 20), randint(1, 20))  
             print("I'm BROKE!")
 
