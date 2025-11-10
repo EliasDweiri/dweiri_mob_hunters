@@ -4,7 +4,7 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - created Background_Flower_Field_1024x1024, created mob v mob collision
+# ChatGPT - generated Background_Flower_Field_1024x1024, cocreated mob v mob collision with Elias Dweiri
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 # Pathfinding - Found in https://medium.com/@aggorjefferson/building-an-a-pathfinding-visualizer-in-python-with-pygame-a2cb3502f49e
 
@@ -95,7 +95,7 @@ class Game:
         self.all_projectiles = pg.sprite.Group()
         self.all_weapons = pg.sprite.Group()
 
-        # takes the map data and creates the appropriate object for each tile
+        # takes the map data and creates the appropriate object for each tile, map maker
         for row, tiles in enumerate(self.map.data):
             print(row)
             for col, tile in enumerate(tiles):
@@ -124,12 +124,20 @@ class Game:
         pg.quit()
 
     def events(self):
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                print("this is happening")
-                self.playing = False
-            if event.type == pg.MOUSEBUTTONDOWN:
-                print("I can get input from mousey mouse mouse mouskerson")
+      for event in pg.event.get():
+        if event.type == pg.QUIT:
+         #  print("this is happening")
+          self.playing = False
+        if event.type == pg.MOUSEBUTTONDOWN:
+           print("I can get input from mousey mouse mouse mousekerson")
+        if event.type == pg.KEYDOWN:
+           if event.key == pg.K_k:
+              self.player.attacking = True
+              self.player.weapon = Sword(self, self.player.rect.x, self.player.rect.y)
+        if event.type == pg.KEYUP:
+           if event.key == pg.K_k:
+              self.player.attacking = False
+              self.player.weapon.kill()
 
     def update(self):
 

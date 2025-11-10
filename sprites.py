@@ -43,14 +43,9 @@ class Player(Sprite):
         self.jumping = False
         self.last_update = 0
         self.current_frame = 0
-
+        self.last_update = 0
         self.attack_hitbox = None
-
-
         self.attacking = False
-
-        self.weapon = ""
-
 
 
     # def load_images(self): COME BACK TO THIS
@@ -123,9 +118,9 @@ class Player(Sprite):
 
         # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
         # if self.coins == 1:
-        if keys[pg.K_k]:
+        # if keys[pg.K_k]:
                 
-            print("trying to spin attack")
+        #     print("trying to spin attack")
 
           
         # accounting for diagonal movement
@@ -228,15 +223,6 @@ class Player(Sprite):
         # makes coin disappear
         self.collide_with_stuff(self.game.all_coins, True)
 
-
-        print(self.weapon_cd.ready())
-
-        if self.weapon_cd.ready():
-            if self.weapon != "":
-                self.weapon.kill()
-
-                
-
         # if self.attacking:
         #     Sword(self.game, self.rect.x, self.rect.y)
 
@@ -274,7 +260,9 @@ class Mob(Sprite):
         # self.rect.y = y * TILESIZE[1]
         # speed
         self.speed = 5
+        self.health = 100
         print(self.pos)
+        self.cd = Cooldown(300)
 
     def collide_with_walls(self, dir):
         # handles collision with walls
@@ -299,7 +287,7 @@ class Mob(Sprite):
                 # bounces off in random direction
                 self.vel.y *= choice([-1,1])
 
-    # FIRST OPTION WORKED WELL
+    
     def collide_with_mobs(self, dir):
     # Handle collisions between mobs
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
@@ -310,7 +298,7 @@ class Mob(Sprite):
                         self.pos.x = hit.rect.left - self.rect.width
                     if self.vel.x < 0:
                         self.pos.x = hit.rect.right
-                    self.vel.x *= choice([-1, 1])  # optional: bounce off
+                    # self.vel.x *= choice([-1, 1])  # optional: bounce off
                     self.rect.x = self.pos.x
 
                 if dir == "y":
@@ -318,12 +306,14 @@ class Mob(Sprite):
                         self.pos.y = hit.rect.top - self.rect.height
                     if self.vel.y < 0:
                         self.pos.y = hit.rect.bottom
-                    self.vel.y *= choice([-1, 1])  # optional: bounce off
+                    # self.vel.y *= choice([-1, 1])  # optional: bounce off
                     self.rect.y = self.pos.y
 
 
 
     def update(self):
+        if self.health <= 0:
+            self.kill()
         # mob behavior
         if self.game.player.pos.x > self.pos.x:
             self.vel.x = 1
@@ -366,18 +356,17 @@ class Sword(Sprite):
         self.game = game
         self.groups = game.all_sprites, game.all_weapons
         Sprite.__init__(self, self.groups)
-        self.image = pg.Surface((TILESIZE[0], TILESIZE[1]//2))
+        self.image = pg.Surface((TILESIZE[0]*2,TILESIZE[1]//2))
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
-        # self.image.set_colorkey() USE THIS TO REMOVE A BACKGROUND ON A SPRITE
         self.rect.x = x * TILESIZE[0]
-        self.rect.y = y * TILESIZE[1]
-        # coin behavior
-        
+        self.rect.y = y *TILESIZE[1]
     def update(self):
-        self.rect.x = self.game.player.rect.x + 32
+        self.rect.x = self.game.player.rect.x + self.game.player.dir.x * 32
+        if self.game.player.dir.x < 0:
+            self.rect.x = self.game.player.rect.x + self.game.player.dir.x * 64
+            # pg.transform.flip(self.image, True, False)
         self.rect.y = self.game.player.rect.y
-
 
 
 
