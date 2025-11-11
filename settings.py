@@ -19,7 +19,7 @@ TURQUOISE = (64, 224, 208)
 FPS = 30
 SCORE = 0
 HEALTH = 100
-
+MUSIC_VOLUME = 0.5
 
 # TILESIZE/LENGTHWIDTH
 # using a tuple to define a title size

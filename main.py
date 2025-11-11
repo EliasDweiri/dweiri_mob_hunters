@@ -70,7 +70,11 @@ class Game:
         self.wall_img = pg.image.load(path.join(self.img_folder, "Cobblestone_Wall_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.projectile_img = pg.image.load(path.join(self.img_folder, "Water_Projectile_16x16.png")).convert_alpha()  # PUT FILE HERE
         self.background_img = pg.image.load(path.join(self.img_folder, "Background_Flower_Field_1024x768.png")).convert_alpha()  # PUT FILE HERE
-        self.player_running_left = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Left_32x32.png")).convert()
+        self.player_running_left = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Left_32x32.png")).convert_alpha() # PUTFILE HERE
+        self.sword_left_img = pg.image.load(path.join(self.img_folder, "sword_left.png")).convert_alpha()
+        self.sword_right_img = pg.image.load(path.join(self.img_folder, "sword_right.png")).convert_alpha()
+        self.sword_up_img = pg.image.load(path.join(self.img_folder, "sword_up.png")).convert_alpha()
+        self.sword_down_img = pg.image.load(path.join(self.img_folder, "sword_down.png")).convert_alpha()
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move3_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r2.png")).convert_alpha()  # PUT FILE HERE
@@ -80,7 +84,7 @@ class Game:
         # MUSIC THEMES
 
         pg.mixer.music.load(path.join(self.sound_folder, "Back_Ground_Theme_1.mp3"))
-        pg.mixer.music.set_volume(0.5)
+        pg.mixer.music.set_volume(MUSIC_VOLUME)
         pg.mixer.music.play(-1)
 
 

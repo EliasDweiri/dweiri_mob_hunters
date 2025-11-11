@@ -250,7 +250,6 @@ class Mob(Sprite):
         # self.image.set_colorkey() USE THIS TO REMOVE A BACKGROUND ON A SPRITE
         self.rect = self.image.get_rect()
         # self.image.fill(RED)
-        self.rect = self.image.get_rect()
         # velocity
         self.vel = vec(choice([-1,1]), choice([-1,1]))
         # position
@@ -357,11 +356,21 @@ class Sword(Sprite):
         self.groups = game.all_sprites, game.all_weapons
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE[0]*2,TILESIZE[1]//2))
-        self.image.fill(WHITE)
+        # self.image.fill(WHITE) makes the sword white instead of sprite
+        # self.image = pg.Surface((16, 64))
+        # self.image = game.sword_img
         self.rect = self.image.get_rect()
-        self.rect.x = x * TILESIZE[0]
-        self.rect.y = y *TILESIZE[1]
+        self.rect.x = x * TILESIZE[0] 
+        self.rect.y = y * TILESIZE[1]
     def update(self):
+        if self.game.player.dir == vec(-1, 0):  # facing left
+            self.image = self.game.sword_left_img
+        elif self.game.player.dir == vec(1, 0):  # facing right
+            self.image = self.game.sword_right_img
+        elif self.game.player.dir == vec(0, -1):
+            self.image = self.game.sword_up_img
+        elif self.game.player.dir == vec(0, 1):
+            self.image = self.game.sword_down_img
         self.rect.x = self.game.player.rect.x + self.game.player.dir.x * 32
         if self.game.player.dir.x < 0:
             self.rect.x = self.game.player.rect.x + self.game.player.dir.x * 64
