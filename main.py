@@ -6,7 +6,6 @@
 # Mr. Cozort - created base code - created spin move attack
 # ChatGPT - generated Background_Flower_Field_1024x1024, cocreated mob v mob collision with Elias Dweiri
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
-# Pathfinding - Found in https://medium.com/@aggorjefferson/building-an-a-pathfinding-visualizer-in-python-with-pygame-a2cb3502f49e
 
 # Game Music: 
 # 
@@ -19,7 +18,7 @@
 # A sort of wave system where mobs come in waves after they are killed
 # Different weapons
 # Complete Sprite retexture
-# Background change
+# Background revamp
 # Staring screen  ui to choose starting weapons and traits
 # Different levels/difficulties aftrer defeating mobs
 # updated screen health and coin amount counters
@@ -27,6 +26,7 @@
 # Screen Text that tells what weapon you are currently using when clicked
 # walking animation
 # better mob pathing 
+# update text - COMPLETED
 
 
 
@@ -158,7 +158,7 @@ class Game:
 
     def draw_text(self, surface, text, size, color, x, y):
         # draws text on screen
-        font_name = pg.font.match_font('arial')
+        font_name = pg.font.match_font('impact')
         font = pg.font.Font(font_name, size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
@@ -169,9 +169,9 @@ class Game:
         # calls on draw_text
         # self.screen.fill(WHITE) # white Background if needed
         self.screen.blit(self.background_img, (0, 0)) # IMG background
-        self.draw_text(self.screen, str(self.player.health), 24, BLACK, 100, 100)
-        self.draw_text(self.screen, str(self.player.coins), 24, BLACK, 400, 100)
-        self.draw_text(self.screen, str(self.time), 24, BLACK, 500, 100) 
+        self.draw_text(self.screen, f"Health: {self.player.health}", 24, BLACK, 350, 50)
+        self.draw_text(self.screen, f"Coins: {self.player.coins}", 24, BLACK, 500, 50)
+        self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50)
         self.all_sprites.draw(self.screen)
         pg.display.flip()
 

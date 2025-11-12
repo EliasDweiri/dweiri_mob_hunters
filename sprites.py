@@ -135,9 +135,6 @@ class Player(Sprite):
             print("im attacking")
             self.weapon = Sword(self.game, self.rect.x, self.rect.y)
             
-            
-            
-
 
     def get_dir(self):
         return self.vel
@@ -400,9 +397,9 @@ class Wall(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
                 if self.vel.x > 0:
-                    print("a wall collided with a wall")
+                    # print("a wall collided with a wall")
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         hits[0].pos.x += self.vel.x
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -412,7 +409,7 @@ class Wall(Sprite):
                         
                 if self.vel.x < 0:
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         hits[0].pos.x += self.vel.x
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -425,9 +422,9 @@ class Wall(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
                 if self.vel.y > 0:
-                    print('wall y collide down')
+                    # print('wall y collide down')
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         hits[0].pos.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -437,7 +434,7 @@ class Wall(Sprite):
                         
                 if self.vel.y < 0:
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         hits[0].pos.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmovable":
