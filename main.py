@@ -39,6 +39,7 @@
 # k - sword
 # o - axe
 # p - water shot
+# i - mace
 
 
 import math
@@ -87,6 +88,7 @@ class Game:
         self.sword_up_img = pg.image.load(path.join(self.img_folder, "sword_up.png")).convert_alpha()
         self.sword_down_img = pg.image.load(path.join(self.img_folder, "sword_down.png")).convert_alpha()
         self.axe_img = pg.image.load(path.join(self.img_folder, "Axe_5x50.png")).convert_alpha()
+        self.mace_img = pg.image.load(path.join(self.img_folder, "Mace_60x15.png")).convert_alpha()
 
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
