@@ -4,7 +4,7 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - generated Background_Flower_Field_1024x1024, cocreated mob v mob collision with Elias Dweiri
+# ChatGPT - generated Background_Flower_Field_1024x1024
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
@@ -14,20 +14,31 @@
 
 # GOALS:
 
+# be able to kill mobs
 # Mobs have collision between each other - COMPLETED
 # A sort of wave system where mobs come in waves after they are killed
 # Different weapons
 # Complete Sprite retexture
 # Background revamp
-# Staring screen  ui to choose starting weapons and traits
-# Different levels/difficulties aftrer defeating mobs
+# Staring screen ui to choose starting weapons and traits
+# Different levels/difficulties after defeating mobs
 # updated screen health and coin amount counters
 # mobs have collission against weapons
-# Screen Text that tells what weapon you are currently using when clicked
+# Screen Text that tells what weapon was last used
 # walking animation
 # better mob pathing 
 # update text - COMPLETED
+# Bone weapon (rib)
 
+# KEYS:
+
+# w - up
+# a - left
+# s - down
+# d - right
+# k - sword
+# o - axe
+# p - water shot
 
 
 import math
@@ -50,7 +61,7 @@ class Game:
         pg.init()
         self.clock = pg.time.Clock()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
-        pg.display.set_caption("Mob Hunters")
+        pg.display.set_caption("Running Man")
         self.playing = True
 
     # sets up a game folder directory path using the current folder containing this file
@@ -60,7 +71,7 @@ class Game:
         self.game_folder = path.dirname(__file__)
         self.img_folder = path.join(self.game_folder, 'images') # images folder
         self.sound_folder = path.join(self.game_folder, 'sounds') # sound folder
-        self.map = Map(path.join(self.game_folder, "level1.txt")) # ttext map folder
+        self.map = Map(path.join(self.game_folder, "level1.txt")) # text map folder
 
 
         # loads images into memory when a new game is created and load_data
@@ -75,6 +86,8 @@ class Game:
         self.sword_right_img = pg.image.load(path.join(self.img_folder, "sword_right.png")).convert_alpha()
         self.sword_up_img = pg.image.load(path.join(self.img_folder, "sword_up.png")).convert_alpha()
         self.sword_down_img = pg.image.load(path.join(self.img_folder, "sword_down.png")).convert_alpha()
+        self.axe_img = pg.image.load(path.join(self.img_folder, "Axe_5x50.png")).convert_alpha()
+
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move3_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r2.png")).convert_alpha()  # PUT FILE HERE
@@ -113,14 +126,13 @@ class Game:
                     self.player = Player(self, col, row)
                 elif tile == "M":
                     Mob(self, col, row)
-
-
+                
     def run(self):
         # game loop
         while self.playing:
             self.dt = self.clock.tick(FPS) / 1000
             # input
-            self.events()
+            self.events() 
             # process
             self.update()
             # output
@@ -144,7 +156,6 @@ class Game:
               self.player.weapon.kill()
 
     def update(self):
-
         # creates a countdown timer
         self.all_sprites.update()
         seconds = pg.time.get_ticks() // 1000
@@ -172,6 +183,7 @@ class Game:
         self.draw_text(self.screen, f"Health: {self.player.health}", 24, BLACK, 350, 50)
         self.draw_text(self.screen, f"Coins: {self.player.coins}", 24, BLACK, 500, 50)
         self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50)
+        # self.draw_text(self.screen, f"Current Weapon: {self.weapon}", 24, BLACK, 800, 50)
         self.all_sprites.draw(self.screen)
         pg.display.flip()
 

@@ -6,6 +6,8 @@ from utils import Cooldown
 from utils import Spritesheet
 from random import choice
 from os import path
+import pygame
+import math
 vec = pg.math.Vector2
  
 class Player(Sprite):
@@ -14,7 +16,7 @@ class Player(Sprite):
         Sprite.__init__(self, self.groups)
         self.game = game
         # animated sprite
-        # self.spritesheet = Spritesheet(path.join(self.game.img_folder, "")) # PUT FILES HERE
+        # self.spritesheet = Spritesheet(path.join(self.game.img_folder, "spritesheet.png")) # PUT FILES HERE
         self.image = pg.Surface((32, 32))
         # creates the sprite
         # how big the sprite is
@@ -38,6 +40,7 @@ class Player(Sprite):
         # cooldown
         self.cd = Cooldown(1000)
         self.weapon_cd = Cooldown(400)
+        self.effect_cd = Cooldown(200)
         self.dir = vec(0,0)
         self.walking = False
         self.jumping = False
@@ -48,34 +51,35 @@ class Player(Sprite):
         self.attacking = False
 
 
-    # def load_images(self): COME BACK TO THIS
+    def rotate(self):
+        pass
+
+    # def load_images(self):
     #     self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
     #                             self.spritesheet.get_image(0, 32, 32, 32)]
+    #     for frame in self.standing_frames:
+    #         frame.set_colorkey(BLACK)
+    #     # self.walk_frames_r
+    #     # self.walk_frames_l
+    #     # pg.transform.flip
 
-        # for frame in self.standing_frames:
-        #     frame.set_colorkey(BLACK)
-        # # self.walk_frames_r
-        # # self.walk_frames_l
-        # # pg.transform.flip
-        
-    # def animate(self): COME BAKC TO THIS
+    # def animate(self):
     #     now = pg.time.get_ticks()
     #     if not self.jumping and not self.walking:
     #         if now - self.last_update > 350:
-    #             print(now)
+    #             # print(now)
     #             self.last_update = now
     #             self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
     #             bottom = self.rect.bottom
     #             self.image = self.standing_frames[self.current_frame]
     #             self.rect = self.image.get_rect()
     #             self.rect.bottom = bottom
+    
                     
 
 
 
-    # def draw_attack(self, surf):
-    #     if self.attack_hitbox:
-    #         pg.draw.rect(surf, (255, 200,60,140), self.attack_hitbox)
+
 
     def get_keys(self):
         self.vel = vec(0, 0)
@@ -89,10 +93,14 @@ class Player(Sprite):
             self.dir = vec(0,-1)
             # self.rect.y -= self.speed
 
+        if keys[pg.K_o]:
+            # print(self.rect.x)
+            Axe(self.game, self)
+
 
         # one form of attacking
         if keys[pg.K_p]:
-            p = Projectile(self.game, self.rect.x, self.rect.y, self.dir)
+            p = Water_Shot(self.game, self.rect.x, self.rect.y, self.dir)
 
 
         # when a is pressed the player moves to the left
@@ -132,9 +140,39 @@ class Player(Sprite):
         if not self.attacking and self.weapon_cd.ready():
             self.weapon_cd.start()
             self.attacking = True
-            print("im attacking")
+            # print("im attacking")
             self.weapon = Sword(self.game, self.rect.x, self.rect.y)
             
+        
+
+    # USE THIS FOR POSSIBLE FIRE EFFECT
+    # class EffectTrail(Sprite):
+    #     def __init__(self, game, x, y):
+    #         self.game = game
+    #         self.groups = game.all_sprites
+    #         Sprite.__init__(self, self.groups)
+    #         self.image = pg.Surface(TILESIZE, pg.SRCALPHA)
+    #         self.alpha = 255
+    #         self.image.fill((255,255,255,255))
+    #         self.rect = self.image.get_rect()
+    #         self.cd = Cooldown(10)
+    #         self.rect.x = x
+    #         self.rect.y = y
+    #         # coin behavior
+    #         self.scale_x = 32
+    #         self.scale_y = 32
+    #     def update(self):
+    #         if self.alpha <= 10:
+    #             self.kill()
+    #         self.image.fill((255,255,255,self.alpha))
+            
+    #         if self.cd.ready():
+    #             self.scale_x -=1
+    #             self.scale_y -=1
+    #             print("I'm ready")
+    #             self.alpha -= 50
+    #             new_image = pg.transform.scale(self.image, (self.scale_x, self.scale_y))
+    #             self.image = new_image
 
     def get_dir(self):
         return self.vel
@@ -205,6 +243,7 @@ class Player(Sprite):
                 print(self.coins)
 
     def update(self):
+        # self.EffectTrail
         self.get_keys()
 
         # self.animate() COME BACK TO THIS
@@ -233,13 +272,120 @@ class Player(Sprite):
         #     self.image = self.game.player_img
         #     # self.rect = self.image.get_rect()
         #     # print("ready")
- 
+
+
+
+# USE THIS FOR FUTURE WEAPON LIKE A MACE
+
+# class SpinningSword(pg.sprite.Sprite):
+#     def __init__(self, game, owner, orbit_radius=50, start_angle=0):
+#         self.groups = game.all_sprites
+#         Sprite.__init__(self, self.groups)
+#         self.game = game
+#         self.owner = owner  # Player (or any object with .pos)
+
+#         # --- base image (dummy sword: long red rectangle) ---
+#         w, h = 60, 12
+#         self.base_image = pg.Surface((w, h), pg.SRCALPHA)
+#         self.base_image.fill(RED)
+
+#         # Define the local pivot on the sword image (the hilt)
+#         # Here we say the hilt is near the left side, centered vertically
+#         rect = self.base_image.get_rect()
+#         self.local_pivot = pg.math.Vector2(rect.left, rect.centery)
+
+#         # Vector from pivot (hilt) to the image center in local space
+#         self.pivot_to_center = pg.math.Vector2(rect.center) - self.local_pivot
+
+#         self.image = self.base_image
+#         self.rect = self.image.get_rect()
+
+#         # Orbit info
+#         self.orbit_radius = orbit_radius
+#         self.angle = start_angle      # degrees around the player
+#         self.spin_speed = 360         # degrees per second (how fast it orbits)
+
+#         # Extra offset to make the sword point outward properly
+#         # (tweak as needed; 0, 90, 180, etc.)
+#         self.orientation_offset = 32
+#         print("spinnging sword created")
+#     def update(self):
+#         # 1. Update orbit angle around the player
+#         self.angle += self.spin_speed * self.game.dt
+
+#         # 2. Compute where the sword's pivot (hilt) should be in world space
+#         #    Orbit in a circle around the player's center
+#         orbit_offset = pg.math.Vector2(self.orbit_radius, 0).rotate(self.angle)
+#         sword_pivot_world = self.owner.pos + orbit_offset
+
+#         # 3. Rotate the sword image around its own pivot (hilt)
+#         image_angle = -self.angle + self.orientation_offset
+#         self.image = pg.transform.rotate(self.base_image, image_angle)
+
+#         # 4. Rotate the pivot->center offset by the same angle so the rect lines up
+#         rotated_pivot_to_center = self.pivot_to_center.rotate(image_angle)
+
+#         # 5. Final sprite center = pivot_world + rotated offset
+#         self.rect = self.image.get_rect(center=sword_pivot_world + rotated_pivot_to_center)
+
+
+
+
+class Axe(pg.sprite.Sprite):
+    def __init__(self, game, player):
+        self.game = game
+        self.groups = game.all_sprites, game.all_mobs
+        Sprite.__init__(self, self.groups)
+        self.player = player
+
+        # Load axe sprite
+        self.axe_img = pg.image.load(path.join(self.game.img_folder, "Axe_5x50.png")).convert_alpha()
+        self.original_image = self.axe_img
+        self.image = self.original_image
+        self.rect = self.image.get_rect()
+
+        # Rotation setup
+        self.angle = 0
+        self.radius = 40
+        self.pivot_offset = pg.math.Vector2(0, -self.radius)
+
+        # Fade out setup
+        self.cd = Cooldown(10)
+        self.alpha = 1000
+    def update(self):
+
+        # Fade-out logic
+        if self.alpha <= 10:
+            self.kill()
+
+        if self.cd.ready():
+            self.alpha -= 100
+
+        # Apply alpha WITHOUT filling or overwriting the sprite
+        self.image = self.original_image.copy()
+        self.image.set_alpha(self.alpha)
+
+        # Rotation math
+        self.angle = (self.angle + 45) % 360
+        rotated_offset = self.pivot_offset.rotate(self.angle)
+
+        # Position the axe around the player
+        self.rect.center = self.player.rect.center + rotated_offset
+
+        # Rotate the sprite itself
+        rotation_angle_for_image = -self.angle - 180
+        self.image = pg.transform.rotate(self.image, rotation_angle_for_image)
+
+        # Keep center consistent after rotation
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+
 class Mob(Sprite):
     def __init__(self, game, x, y):
+        self.game = game
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
         # creates the mob
-        self.game = game
         # how big the mob is
         self.image = pg.Surface((32, 32))
         # mob color
@@ -346,7 +492,6 @@ class Coin(Sprite):
         # coin behavior
         pass
 
-
 class Sword(Sprite):
     def __init__(self, game, x, y):
         self.game = game
@@ -452,7 +597,7 @@ class Wall(Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls('y')
 
-class Projectile(Sprite):
+class Water_Shot(Sprite):
     def __init__(self, game, x, y, dir):
         self.game = game
         self.groups = game.all_sprites, game.all_projectiles
@@ -468,7 +613,7 @@ class Projectile(Sprite):
         self.rect.x = x
         self.rect.y = y
         self.speed = 10
-        print
+
     def update(self):
         self.pos += self.vel * self.speed
         self.rect.x = self.pos.x
