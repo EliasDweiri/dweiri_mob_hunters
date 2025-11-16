@@ -1,5 +1,14 @@
-from settings import *
+import math
+import random
+import sys
+from typing import List, Tuple, Optional
 import pygame as pg
+from settings import *
+from sprites import *
+from utils import *
+from os import path
+from random import randint
+from queue import PriorityQueue
  
 # object or class that
  
@@ -42,3 +51,18 @@ class Spritesheet:
         image.blit(self.spritesheet, (0,0), (x,y, width, height))
         image = pg.transform.scale(image, (width, height))
         return image
+    
+
+
+    
+def pause_game():
+    paused = True
+
+    while paused:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:  # Press P to unpause
+                    paused = False

@@ -40,7 +40,7 @@
 # o - axe
 # p - water shot
 # i - mace
-
+# esc - pause
 
 import math
 import random
@@ -156,6 +156,10 @@ class Game:
            if event.key == pg.K_k:
               self.player.attacking = False
               self.player.weapon.kill()
+        
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_ESCAPE:
+                pause_game()
 
     def update(self):
         # creates a countdown timer
@@ -179,6 +183,8 @@ class Game:
         surface.blit(text_surface, text_rect)
 
     def draw(self):
+
+        
         # calls on draw_text
         # self.screen.fill(WHITE) # white Background if needed
         self.screen.blit(self.background_img, (0, 0)) # IMG background
@@ -186,6 +192,7 @@ class Game:
         self.draw_text(self.screen, f"Coins: {self.player.coins}", 24, BLACK, 500, 50)
         self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50)
         # self.draw_text(self.screen, f"Current Weapon: {self.weapon}", 24, BLACK, 800, 50)
+        
         self.all_sprites.draw(self.screen)
         pg.display.flip()
 
