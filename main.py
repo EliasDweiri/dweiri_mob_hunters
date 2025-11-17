@@ -113,15 +113,21 @@ class Game:
         self.all_walls = pg.sprite.Group()
         self.all_projectiles = pg.sprite.Group()
         self.all_weapons = pg.sprite.Group()
+        self.all_breakable_walls = pg.sprite.Group()
+
 
         # takes the map data and creates the appropriate object for each tile, map maker
         for row, tiles in enumerate(self.map.data):
-            print(row)
+            # print(row)
             for col, tile in enumerate(tiles):
                 if tile == "1":
                     Wall(self, col, row, "unmoveable")
                 elif tile == "2":
                     Wall(self, col, row, "moveable")
+                elif tile == "3":
+                    Indestructible_Wall(self, col, row, "unmoveable")
+                elif tile == "4":
+                    Indestructible_Wall(self, col, row, "moveable")
                 elif tile == "C":
                     Coin(self, col, row)
                 elif tile == "P":
@@ -171,7 +177,7 @@ class Game:
         if len(self.all_coins) == 0:
             for i in range(2, 7):
                 Coin(self, randint(1, 20), randint(1, 20))  
-            print("I'm BROKE!")
+            # print("I'm BROKE!")
 
     def draw_text(self, surface, text, size, color, x, y):
         # draws text on screen
@@ -183,7 +189,6 @@ class Game:
         surface.blit(text_surface, text_rect)
 
     def draw(self):
-
         
         # calls on draw_text
         # self.screen.fill(WHITE) # white Background if needed

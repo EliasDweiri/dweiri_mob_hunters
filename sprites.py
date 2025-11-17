@@ -280,7 +280,7 @@ class Player(Sprite):
 
 class Mace(pg.sprite.Sprite):
     def __init__(self, game, owner, orbit_radius=30, start_angle=0):
-        self.groups = game.all_sprites
+        self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
         self.game = game
         self.owner = owner  # Player (or any object with .pos)
@@ -501,7 +501,7 @@ class Coin(Sprite):
 class Sword(Sprite):
     def __init__(self, game, x, y):
         self.game = game
-        self.groups = game.all_sprites, game.all_weapons
+        self.groups = game.all_sprites, game.all_weapons, game.all_mobs
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE[0]*2,TILESIZE[1]//2))
         # self.image.fill(WHITE) makes the sword white instead of sprite
@@ -529,6 +529,85 @@ class Sword(Sprite):
 
  
 class Wall(Sprite):
+    def __init__(self, game, x, y, state):
+        self.groups = game.all_sprites, game.all_walls
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.game.all_breakable_walls.add(self)
+        self.image = pg.Surface(TILESIZE)
+        # self.image.fill(GREY)
+        self.image = game.wall_img
+        # self.image.set_colorkey() USE THIS TO REMOVE A BACKGROUND ON A SPRITE
+        self.rect = self.image.get_rect()
+        self.vel = vec(0,0)
+        self.pos = vec(x,y) * TILESIZE[0]
+        self.state = state
+        # print("wall created at", str(self.rect.x), str(self.rect.y))
+    
+    def collide_with_walls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+            if hits:
+                if self.vel.x > 0:
+                    # print("a wall collided with a wall")
+                    if hits[0].state == "moveable":
+                        # print("i hit a moveable block...")
+                        hits[0].pos.x += self.vel.x
+                        if len(hits) > 1:
+                            if hits[1].state == "unmoveable":
+                                self.pos.x = hits[1].rect.left - self.rect.width
+                    else:
+                        self.pos.x = hits[0].rect.left - self.rect.width
+                        
+                if self.vel.x < 0:
+                    if hits[0].state == "moveable":
+                        # print("i hit a moveable block...")
+                        hits[0].pos.x += self.vel.x
+                        if len(hits) > 1:
+                            if hits[1].state == "unmoveable":
+                                self.pos.x = hits[1].rect.right
+                    else:
+                        self.pos.x = hits[0].rect.right
+                self.vel.x = 0
+                self.rect.x = self.pos.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+            if hits:
+                if self.vel.y > 0:
+                    # print('wall y collide down')
+                    if hits[0].state == "moveable":
+                        # print("i hit a moveable block...")
+                        hits[0].pos.y += self.vel.y
+                        if len(hits) > 1:
+                            if hits[1].state == "unmoveable":
+                                self.pos.y = hits[1].rect.top - self.rect.height
+                    else:
+                        self.pos.y = hits[0].rect.top - self.rect.height
+                        
+                if self.vel.y < 0:
+                    if hits[0].state == "moveable":
+                        # print("i hit a moveable block...")
+                        hits[0].pos.y += self.vel.y
+                        if len(hits) > 1:
+                            if hits[1].state == "unmovable":
+                                self.pos.y = hits[1].rect.bottom
+                    else:
+                        self.pos.y = hits[0].rect.bottom
+                self.vel.y = 0
+                self.rect.y = self.pos.y
+
+    def update(self):
+        # wall
+        self.pos += self.vel
+        self.rect.x = self.pos.x
+        self.collide_with_walls('x')
+        self.rect.y = self.pos.y
+        self.collide_with_walls('y')
+
+
+
+
+class Indestructible_Wall(Sprite):
     def __init__(self, game, x, y, state):
         self.groups = game.all_sprites, game.all_walls
         Sprite.__init__(self, self.groups)
@@ -603,6 +682,8 @@ class Wall(Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls('y')
 
+
+
 class Water_Shot(Sprite):
     def __init__(self, game, x, y, dir):
         self.game = game
@@ -624,6 +705,13 @@ class Water_Shot(Sprite):
         self.pos += self.vel * self.speed
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
-        hits = pg.sprite.spritecollide(self, self.game.all_walls, True)
+        # Regular walls (breakable)
+        hits = pg.sprite.spritecollide(self, self.game.all_breakable_walls, True)
         if hits:
-            self.kill()
+            self.kill()   # break wall + remove projectile
+
+        # Indestructible walls (do not break)
+        hits2 = pg.sprite.spritecollide(self, self.game.all_walls, False)
+        if hits2:
+            self.kill()   # projectile dies but wall stays
+
