@@ -114,7 +114,8 @@ class Game:
         self.all_projectiles = pg.sprite.Group()
         self.all_weapons = pg.sprite.Group()
         self.all_breakable_walls = pg.sprite.Group()
-
+        self.all_potions = pg.sprite.Group()
+        self.potions = pg.sprite.Group()
 
         # takes the map data and creates the appropriate object for each tile, map maker
         for row, tiles in enumerate(self.map.data):
@@ -178,6 +179,10 @@ class Game:
             for i in range(2, 7):
                 Coin(self, randint(1, 20), randint(1, 20))  
             # print("I'm BROKE!")
+
+        if len(self.all_potions) == 0:
+            for i in range(2, 5):
+                Speed_Potion(self, randint(1, 20), randint(1, 20))
 
     def draw_text(self, surface, text, size, color, x, y):
         # draws text on screen

@@ -49,6 +49,11 @@ class Player(Sprite):
         self.last_update = 0
         self.attack_hitbox = None
         self.attacking = False
+        self.speed_boost_active = False
+        self.speed_boost_amount = 0
+        self.speed_boost_end_time = 0
+        self.speed_timer = 0  # how long the boost lasts
+        
 
 
     def rotate(self):
@@ -259,9 +264,24 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_mobs, False)
         # makes coin disappear
         self.collide_with_stuff(self.game.all_coins, True)
+        
 
-        # if self.attacking:
-        #     Sword(self.game, self.rect.x, self.rect.y)
+        #  POTION PICKUP 
+        potion_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
+        if potion_hits:
+            print("PLAYER PICKED UP SPEED POTION!")
+            self.speed += 300
+            self.speed_boost_active = True
+            self.speed_timer = pg.time.get_ticks()
+
+        # Remove speed boost after 15 seconds
+        if self.speed_boost_active:
+            if pg.time.get_ticks() - self.speed_timer >= 15000:
+                print("Speed boost ended.")
+                self.speed -= 300
+                self.speed_boost_active = False
+                # if self.attacking:
+                #     Sword(self.game, self.rect.x, self.rect.y)
 
 
 
@@ -275,10 +295,14 @@ class Player(Sprite):
         #     # print("ready")
 
 
+    def apply_speed_boost(self, amount, duration):
+        self.speed_boost_active = True
+        self.speed_boost_amount = amount
+        self.speed += amount
+        self.speed_boost_end_time = pg.time.get_ticks() + duration
 
-# USE THIS FOR FUTURE WEAPON LIKE A MACE
-
-class Mace(pg.sprite.Sprite):
+# MACE
+class Mace(Sprite):
     def __init__(self, game, owner, orbit_radius=30, start_angle=0):
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
@@ -337,7 +361,7 @@ class Mace(pg.sprite.Sprite):
         self.rect = self.image.get_rect(center=sword_pivot_world + rotated_pivot_to_center)
 
 
-class Axe(pg.sprite.Sprite):
+class Axe(Sprite):
     def __init__(self, game, player):
         self.game = game
         self.groups = game.all_sprites, game.all_mobs
@@ -710,8 +734,25 @@ class Water_Shot(Sprite):
         if hits:
             self.kill()   # break wall + remove projectile
 
-        # Indestructible walls (do not break)
+        # Indestructible walls 
         hits2 = pg.sprite.spritecollide(self, self.game.all_walls, False)
         if hits2:
             self.kill()   # projectile dies but wall stays
 
+class Speed_Potion(Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self.groups = game.all_sprites, game.all_potions
+        Sprite.__init__(self, self.groups)
+
+        self.image = pg.Surface((32, 32))
+        self.image.fill((0, 255, 255))  # cyan potion
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x * TILESIZE[0]
+        self.rect.y = y * TILESIZE[1]
+
+    def update(self):
+        # Potion does NOT handle collision
+        # Player handles picking up potions
+        pass
