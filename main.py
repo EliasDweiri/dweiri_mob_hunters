@@ -17,18 +17,21 @@
 # be able to kill mobs
 # Mobs have collision between each other - COMPLETED
 # A sort of wave system where mobs come in waves after they are killed
-# Different weapons
+# Different weapons - COMPLETED
 # Complete Sprite retexture
 # Background revamp
 # Staring screen ui to choose starting weapons and traits
 # Different levels/difficulties after defeating mobs
-# updated screen health and coin amount counters
-# mobs have collission against weapons
+# updated screen health and coin amount counters - COMPLETED
+# mobs have collission against weapons - COMPLETED
 # Screen Text that tells what weapon was last used
 # walking animation
 # better mob pathing 
 # update text - COMPLETED
 # Bone weapon (rib)
+# Pause Mechanism - COMPLETED
+
+
 
 # KEYS:
 
@@ -181,8 +184,9 @@ class Game:
             # print("I'm BROKE!")
 
         if len(self.all_potions) == 0:
-            for i in range(2, 5):
+            for i in range(2, 3):
                 Speed_Potion(self, randint(1, 20), randint(1, 20))
+                Health_Potion(self, randint(1, 20), randint(1, 20))
 
     def draw_text(self, surface, text, size, color, x, y):
         # draws text on screen

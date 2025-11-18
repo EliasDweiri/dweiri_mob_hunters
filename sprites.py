@@ -33,7 +33,7 @@ class Player(Sprite):
         # position
         self.pos = vec(x, y) * TILESIZE[0]
         # speed
-        self.speed = 500
+        self.speed = 300
         self.health = 100
         # coins
         self.coins = 0
@@ -53,7 +53,16 @@ class Player(Sprite):
         self.speed_boost_amount = 0
         self.speed_boost_end_time = 0
         self.speed_timer = 0  # how long the boost lasts
-        
+
+
+    def health_potion_pickup(self):
+    # Check collision with health potions
+        hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
+        for potion in hits:
+            print("PLAYER PICKED UP HEALTH POTION!")
+            self.health += 50
+            if self.health > 100:  # optional max health
+                self.health = 100
 
 
     def rotate(self):
@@ -264,24 +273,41 @@ class Player(Sprite):
         self.collide_with_stuff(self.game.all_mobs, False)
         # makes coin disappear
         self.collide_with_stuff(self.game.all_coins, True)
-        
 
-        #  POTION PICKUP 
-        potion_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
-        if potion_hits:
+        self.health_potion_pickup()
+
+
+        #  SPEED POTION PICKUP 
+
+        speed_potion_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
+        if speed_potion_hits:
             print("PLAYER PICKED UP SPEED POTION!")
-            self.speed += 300
+            self.speed += 50
             self.speed_boost_active = True
             self.speed_timer = pg.time.get_ticks()
 
-        # Remove speed boost after 15 seconds
+        # Remove speed boost after 12 seconds
         if self.speed_boost_active:
-            if pg.time.get_ticks() - self.speed_timer >= 15000:
+            if pg.time.get_ticks() - self.speed_timer >= 12000:
                 print("Speed boost ended.")
-                self.speed -= 300
+                self.speed -= 50
                 self.speed_boost_active = False
                 # if self.attacking:
                 #     Sword(self.game, self.rect.x, self.rect.y)
+
+
+
+        # HEALTH POTION PICKUP
+
+        health_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
+
+        for potion in health_hits:
+            if isinstance(potion, Health_Potion):
+                print("HEALTH POTION PICKED UP!")
+                self.health += 50
+                if self.health > 100:
+                    self.health = 100
+
 
 
 
@@ -300,6 +326,11 @@ class Player(Sprite):
         self.speed_boost_amount = amount
         self.speed += amount
         self.speed_boost_end_time = pg.time.get_ticks() + duration
+    
+    def apply_health_boost(self, amount):
+        self.health_boost_active = True
+        self.health_amount = amount
+        self.health += amount
 
 # MACE
 class Mace(Sprite):
@@ -739,6 +770,8 @@ class Water_Shot(Sprite):
         if hits2:
             self.kill()   # projectile dies but wall stays
 
+# ------ POTIONS -------
+
 class Speed_Potion(Sprite):
     def __init__(self, game, x, y):
         self.game = game
@@ -746,7 +779,7 @@ class Speed_Potion(Sprite):
         Sprite.__init__(self, self.groups)
 
         self.image = pg.Surface((32, 32))
-        self.image.fill((0, 255, 255))  # cyan potion
+        self.image.fill((TURQUOISE))  # cyan potion
         self.rect = self.image.get_rect()
 
         self.rect.x = x * TILESIZE[0]
@@ -756,3 +789,16 @@ class Speed_Potion(Sprite):
         # Potion does NOT handle collision
         # Player handles picking up potions
         pass
+
+
+class Health_Potion(Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self.groups = game.all_sprites, game.all_potions
+        Sprite.__init__(self, self.groups)
+
+        self.image = pg.Surface((32, 32))
+        self.image.fill((255, 0, 0))  # red potion
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE[0]
+        self.rect.y = y * TILESIZE[1]
