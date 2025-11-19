@@ -779,7 +779,8 @@ class Speed_Potion(Sprite):
         Sprite.__init__(self, self.groups)
 
         self.image = pg.Surface((32, 32))
-        self.image.fill((TURQUOISE))  # cyan potion
+        # self.image.fill((TURQUOISE))  # cyan potion
+        self.image = game.speed_potion_img
         self.rect = self.image.get_rect()
 
         self.rect.x = x * TILESIZE[0]
@@ -798,7 +799,8 @@ class Health_Potion(Sprite):
         Sprite.__init__(self, self.groups)
 
         self.image = pg.Surface((32, 32))
-        self.image.fill((255, 0, 0))  # red potion
+        # self.image.fill((255, 0, 0))  # red potion
+        self.image = game.health_potion_img
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE[0]
         self.rect.y = y * TILESIZE[1]
