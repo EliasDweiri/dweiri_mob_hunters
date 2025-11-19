@@ -65,7 +65,7 @@ class Game:
         pg.init()
         self.clock = pg.time.Clock()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
-        pg.display.set_caption("Running Man")
+        pg.display.set_caption("MOB HUNTERS")
         self.playing = True
 
     # sets up a game folder directory path using the current folder containing this file
