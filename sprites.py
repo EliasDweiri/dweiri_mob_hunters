@@ -91,7 +91,7 @@ class Player(Sprite):
     
 
 
-    def get_keys(self):
+    def get_keys(self):        
         self.vel = vec(0, 0)
         keys = pg.key.get_pressed()
 
@@ -104,16 +104,27 @@ class Player(Sprite):
             # self.rect.y -= self.speed
 
 
+            self.image = self.game.player_img
+
+
         # when a is pressed the player moves to the left
         if keys[pg.K_a]:
             self.vel.x = -self.speed * self.game.dt
             self.dir = vec(-1,0)
             
+            self.image = self.game.player_running_left
+
+
+
 
         # when s is pressed the player moves down
         if keys[pg.K_s]:
             self.vel.y = self.speed * self.game.dt
             self.dir = vec(0,1)
+
+        
+
+
 
 
             # self.rect.y += self.speed
@@ -121,14 +132,10 @@ class Player(Sprite):
         if keys[pg.K_d]:
             self.vel.x = self.speed * self.game.dt
             self.dir = vec(1,0)
+       
+            self.image = self.game.player_running_right
 
-        # SPIN MOVEEEEEEE, ONLY WORKS IF 15 COINS ARE COLLECTED
-        # if self.coins == 1:
-        # if keys[pg.K_k]:
-                
-        #     print("trying to spin attack")
 
-          
         # accounting for diagonal movement
         if self.vel.x != 0 and self.vel[1] != 0:
             self.vel *= 0.7071
@@ -282,7 +289,7 @@ class Player(Sprite):
         speed_potion_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
         if speed_potion_hits:
             print("PLAYER PICKED UP SPEED POTION!")
-            self.speed += 50
+            self.speed += 30
             self.speed_boost_active = True
             self.speed_timer = pg.time.get_ticks()
 

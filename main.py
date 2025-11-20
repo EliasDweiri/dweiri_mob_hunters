@@ -86,6 +86,7 @@ class Game:
         self.projectile_img = pg.image.load(path.join(self.img_folder, "Water_Projectile_16x16.png")).convert_alpha()  # PUT FILE HERE
         self.background_img = pg.image.load(path.join(self.img_folder, "Background_Flower_Field_1024x768.png")).convert_alpha()  # PUT FILE HERE
         self.player_running_left = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Left_32x32.png")).convert_alpha() # PUTFILE HERE
+        self.player_running_right = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Right_32x32.png")).convert_alpha() # PUTFILE HERE
         self.sword_left_img = pg.image.load(path.join(self.img_folder, "sword_left.png")).convert_alpha()
         self.sword_right_img = pg.image.load(path.join(self.img_folder, "sword_right.png")).convert_alpha()
         self.sword_up_img = pg.image.load(path.join(self.img_folder, "sword_up.png")).convert_alpha()
@@ -173,6 +174,7 @@ class Game:
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 pause_game()
+
 
     def update(self):
         # creates a countdown timer
