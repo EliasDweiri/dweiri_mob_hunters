@@ -63,10 +63,12 @@ from queue import PriorityQueue
 class Game:
     def __init__(self):
         pg.init()
+        pg.mixer.init()
         self.clock = pg.time.Clock()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption("MOB HUNTERS")
         self.playing = True
+        self.running = True
 
     # sets up a game folder directory path using the current folder containing this file
     # gives the Game class a map property which uses the Map class to parse the level1.txt file
@@ -211,9 +213,20 @@ class Game:
         self.draw_text(self.screen, f"Coins: {self.player.coins}", 24, BLACK, 500, 50)
         self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50)
         # self.draw_text(self.screen, f"Current Weapon: {self.weapon}", 24, BLACK, 800, 50)
-        
         self.all_sprites.draw(self.screen)
         pg.display.flip()
+
+
+
+    # def wait_for_key(self):
+    #     waiting = True
+    #     while waiting:
+    #         self.colc.tick(FPS)
+    #         for event in pg.event.get()
+
+
+    # def show_start_screen(self):
+    #     self.screen.fill(BLACK)
 
 
 if __name__ == "__main__":

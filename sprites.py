@@ -258,7 +258,7 @@ class Player(Sprite):
         if hits: 
             if str(hits[0].__class__.__name__) == "Mob":
                 if self.cd.ready():
-                    self.health -= 10
+                    self.health -= 20
                     self.cd.start()
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
@@ -399,6 +399,21 @@ class Mace(Sprite):
         self.rect = self.image.get_rect(center=sword_pivot_world + rotated_pivot_to_center)
 
 
+
+        def collide_with_stuff(self, group, kill):
+        # collides with mob
+        # collides with coin
+        # makes collisions happen
+            hits = pg.sprite.spritecollide(self, group, kill)
+            if hits: 
+                if str(hits[0].__class__.__name__) == "Mob":
+                    if self.cd.ready():
+                        Mob.health -= 20
+                        self.cd.start()
+                if Mob.health <= 0:
+                    Mob.kill
+
+        
 class Axe(Sprite):
     def __init__(self, game, player):
         self.game = game
@@ -508,7 +523,6 @@ class Mob(Sprite):
                         self.pos.x = hit.rect.left - self.rect.width
                     if self.vel.x < 0:
                         self.pos.x = hit.rect.right
-                    # self.vel.x *= choice([-1, 1])  # optional: bounce off
                     self.rect.x = self.pos.x
 
                 if dir == "y":
@@ -516,8 +530,12 @@ class Mob(Sprite):
                         self.pos.y = hit.rect.top - self.rect.height
                     if self.vel.y < 0:
                         self.pos.y = hit.rect.bottom
-                    # self.vel.y *= choice([-1, 1])  # optional: bounce off
                     self.rect.y = self.pos.y
+    
+    # def collide_with_weapons(self):
+    #     hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+    #     if hits == True:
+
 
 
 
