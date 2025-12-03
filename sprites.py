@@ -53,6 +53,7 @@ class Player(Sprite):
         self.speed_boost_amount = 0
         self.speed_boost_end_time = 0
         self.speed_timer = 0  # how long the boost lasts
+        self.mace_cd = Cooldown(500) 
 
 
     def health_potion_pickup(self):
@@ -125,8 +126,6 @@ class Player(Sprite):
         
 
 
-
-
             # self.rect.y += self.speed
         # when d is pressed the player moves to the right
         if keys[pg.K_d]:
@@ -147,11 +146,13 @@ class Player(Sprite):
             Axe(self.game, self)
 
 
-        if keys[pg.K_i]:
-            Mace(self.game, self, orbit_radius = 5, start_angle=0)
+        if keys[pg.K_i]:  # Key to use Mace
+            # Only spawn a Mace if cooldown is ready AND no other Mace exists
+            if self.mace_cd.ready() and not any(isinstance(s, Mace) for s in self.game.all_sprites):
+                Mace(self.game, self)   # Spawn the Mace
+                self.mace_cd.start()    # Start cooldown
 
-        # WATER SHOT
-        # one form of attacking
+
         if keys[pg.K_p]:
             p = Water_Shot(self.game, self.rect.x, self.rect.y, self.dir)
 
@@ -342,7 +343,7 @@ class Player(Sprite):
 # MACE
 class Mace(Sprite):
     def __init__(self, game, owner, orbit_radius=30, start_angle=0):
-        self.groups = game.all_sprites, game.all_mobs
+        self.groups = game.all_sprites, game.all_weapons
         Sprite.__init__(self, self.groups)
         self.game = game
         self.owner = owner  # Player (or any object with .pos)
@@ -400,24 +401,23 @@ class Mace(Sprite):
 
 
 
-        def collide_with_stuff(self, group, kill):
-        # collides with mob
-        # collides with coin
-        # makes collisions happen
-            hits = pg.sprite.spritecollide(self, group, kill)
-            if hits: 
-                if str(hits[0].__class__.__name__) == "Mob":
-                    if self.cd.ready():
-                        Mob.health -= 20
-                        self.cd.start()
-                if Mob.health <= 0:
-                    Mob.kill
+        hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        for mob in hits:
+            if mob.hit_cd.ready():
+                mob.health -= 20
+                mob.hit_cd.start()
 
+                # Knockback edited to work without game.all_mobs
+                knockback_dir = mob.pos - self.owner.pos
+                if knockback_dir.length() != 0:
+                    knockback_dir = knockback_dir.normalize()
+
+                mob.pos += knockback_dir * 100   # <-- push strength
         
 class Axe(Sprite):
     def __init__(self, game, player):
         self.game = game
-        self.groups = game.all_sprites, game.all_mobs
+        self.groups = game.all_sprites,
         Sprite.__init__(self, self.groups)
         self.player = player
 
@@ -463,6 +463,19 @@ class Axe(Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
 
 
+        hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        for mob in hits:
+            if mob.hit_cd.ready():
+                mob.health -= 50
+                mob.hit_cd.start()
+                
+                # knockback
+                knockback_dir = mob.pos - self.player.pos
+                if knockback_dir.length() != 0:
+                    knockback_dir = knockback_dir.normalize()
+                mob.pos += knockback_dir * 30
+
+
 class Mob(Sprite):
     def __init__(self, game, x, y):
         self.game = game
@@ -484,6 +497,7 @@ class Mob(Sprite):
         # self.rect.x = x * TILESIZE[0]
         # self.rect.y = y * TILESIZE[1]
         # speed
+        self.hit_cd = Cooldown(500)
         self.speed = 5
         self.health = 100
         print(self.pos)

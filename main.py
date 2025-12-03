@@ -4,7 +4,7 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - generated Background_Flower_Field_1024x1024
+# ChatGPT - generated Background_Flower_Field_1024x1024, help with Mace cooldown
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
