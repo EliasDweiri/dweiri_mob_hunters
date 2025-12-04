@@ -97,6 +97,7 @@ class Game:
         self.staff_img = pg.image.load(path.join(self.img_folder, "Staff_60x15.png")).convert_alpha()
         self.health_potion_img = pg.image.load(path.join(self.img_folder, "Health_Potion_32x32.png")).convert_alpha()
         self.speed_potion_img = pg.image.load(path.join(self.img_folder, "Speed_Potion_32x32.png")).convert_alpha()
+        self.damage_potion_img = pg.image.load(path.join(self.img_folder, "Damage_Potion.png")).convert_alpha()
 
 
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
@@ -191,9 +192,10 @@ class Game:
             # print("I'm BROKE!")
 
         if len(self.all_potions) == 0:
-            for i in range(2, 3):
+            for i in range(2, 4):
                 Speed_Potion(self, randint(1, 20), randint(1, 20))
                 Health_Potion(self, randint(1, 20), randint(1, 20))
+                Damage_Potion(self, randint(1, 20), randint(1, 20))
 
     def draw_text(self, surface, text, size, color, x, y):
         # draws text on screen

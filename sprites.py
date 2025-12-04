@@ -841,29 +841,29 @@ class Water_Shot(Sprite):
         self.image = game.projectile_img
         self.rect = self.image.get_rect()
 
-        self.pos = vec(x, y)           # ✅ SAME SYSTEM AS PLAYER
-        self.vel = dir.normalize()    # ✅ ALWAYS MOVE CORRECTLY
+        self.pos = vec(x, y)        
+        self.vel = dir.normalize()    
         self.rect.center = self.pos
 
         self.speed = 10
         self.damage = 25
 
     def update(self):
-        # ✅ MOVE
+        #  MOVE
         self.pos += self.vel * self.speed
         self.rect.center = self.pos
 
-        # ✅ WALL COLLISION
+        #  WALL COLLISION
         if pg.sprite.spritecollide(self, self.game.all_breakable_walls, True):
             self.kill()
 
         if pg.sprite.spritecollide(self, self.game.all_walls, False):
             self.kill()
 
-        # ✅ ✅ ✅ WATER → MOB DAMAGE
+        #  WATER → MOB DAMAGE
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
-            # print("WATER HIT MOB")      # ✅ DEBUG CONFIRMATION
+            
 
             if mob.hit_cd.ready():
                 mob.health -= self.damage
