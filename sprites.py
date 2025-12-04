@@ -53,17 +53,50 @@ class Player(Sprite):
         self.speed_boost_amount = 0
         self.speed_boost_end_time = 0
         self.speed_timer = 0  # how long the boost lasts
-        self.mace_cd = Cooldown(500) 
+        self.staff_cd = Cooldown(2000) 
+        self.axe_cd = Cooldown(600)
+        # potion effects 
+        self.damage_boost = 0
+        self.defense_boost = 0
+        self.knockback_boost = 0
 
+        self.damage_timer = 0
+        self.defense_timer = 0
+        self.knockback_timer = 0
 
     def health_potion_pickup(self):
     # Check collision with health potions
-        hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
-        for potion in hits:
-            print("PLAYER PICKED UP HEALTH POTION!")
-            self.health += 50
-            if self.health > 100:  # optional max health
-                self.health = 100
+        potion_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
+
+        for potion in potion_hits:
+
+            # HEALTH 
+            if isinstance(potion, Health_Potion):
+                self.health += 50
+                if self.health > 100:
+                    self.health = 100
+
+            # SPEED 
+            elif isinstance(potion, Speed_Potion):
+                self.speed += 30
+                self.speed_timer = pg.time.get_ticks()
+                self.speed_boost_active = True
+
+            # DAMAGE
+            elif isinstance(potion, Damage_Potion):
+                self.damage_boost = 25
+                self.damage_timer = pg.time.get_ticks()
+
+            # DEFENSE
+            elif isinstance(potion, Defense_Potion):
+                self.defense_boost = 5
+                self.defense_timer = pg.time.get_ticks()
+
+            # KNOCKBACK
+            elif isinstance(potion, Knockback_Potion):
+                self.knockback_boost = 40
+                self.knockback_timer = pg.time.get_ticks()
+
 
 
     def rotate(self):
@@ -142,15 +175,16 @@ class Player(Sprite):
 
         # AXE
         if keys[pg.K_o]:
-            # print(self.rect.x)
-            Axe(self.game, self)
+            if self.axe_cd.ready():
+                Axe(self.game, self)
+                self.axe_cd.start()
 
 
-        if keys[pg.K_i]:  # Key to use Mace
-            # Only spawn a Mace if cooldown is ready AND no other Mace exists
-            if self.mace_cd.ready() and not any(isinstance(s, Mace) for s in self.game.all_sprites):
-                Mace(self.game, self)   # Spawn the Mace
-                self.mace_cd.start()    # Start cooldown
+        if keys[pg.K_i]:  # Key to use Staff
+            # Only spawn a Staff if cooldown is ready AND no other Staff exists
+            if self.staff_cd.ready() and not any(isinstance(s, Staff) for s in self.game.all_sprites):
+                Staff(self.game, self)   # Spawn the Staff
+                self.staff_cd.start()    # Start cooldown
 
 
         if keys[pg.K_p]:
@@ -259,7 +293,7 @@ class Player(Sprite):
         if hits: 
             if str(hits[0].__class__.__name__) == "Mob":
                 if self.cd.ready():
-                    self.health -= 20
+                    self.health -= max(1, 10 - self.defense_boost)
                     self.cd.start()
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
@@ -340,20 +374,20 @@ class Player(Sprite):
         self.health_amount = amount
         self.health += amount
 
-# MACE
-class Mace(Sprite):
+# Staff
+class Staff(Sprite):
     def __init__(self, game, owner, orbit_radius=30, start_angle=0):
         self.groups = game.all_sprites, game.all_weapons
         Sprite.__init__(self, self.groups)
         self.game = game
         self.owner = owner  # Player (or any object with .pos)
 
-        self.total_rotation = 0  # Track how much the mace has spun
+        self.total_rotation = 0  # Track how much the staff has spun
 
-        self.mace_img = pg.image.load(path.join(self.game.img_folder, "Mace_60x15.png")).convert_alpha()
-        self.base_image = self.mace_img
+        self.staff_img = pg.image.load(path.join(self.game.img_folder, "Staff_60x15.png")).convert_alpha()
+        self.base_image = self.staff_img
 
-        # Define the local pivot on the sword image (the hilt)
+        # Define the local pivot on the staff image (the hilt)
         # Here we say the hilt is near the left side, centered vertically
         rect = self.base_image.get_rect()
         self.local_pivot = pg.math.Vector2(rect.left, rect.centery)
@@ -369,10 +403,10 @@ class Mace(Sprite):
         self.angle = start_angle      # degrees around the player
         self.spin_speed = 500         # degrees per second (how fast it orbits)
 
-        # Extra offset to make the sword point outward properly
+        # Extra offset to make the staff point outward properly
         # (tweak as needed; 0, 90, 180, etc.)
         self.orientation_offset = 32
-        # print("spinnging sword created")
+        # print("spinnging staff created")
 
     def update(self):
 
@@ -385,11 +419,11 @@ class Mace(Sprite):
             self.kill()
             return
         
-        # 2. Compute where the sword's pivot (hilt) should be in world space
+        # 2. Compute where the staff's pivot (hilt) should be in world space
         #    Orbit in a circle around the player's center
         orbit_offset = pg.math.Vector2(self.orbit_radius, 0).rotate(self.angle)
-        sword_pivot_world = self.owner.pos + pg.math.Vector2(16, 16) + orbit_offset
-        # 3. Rotate the sword image around its own pivot (hilt)
+        staff_pivot_world = self.owner.pos + pg.math.Vector2(16, 16) + orbit_offset
+        # 3. Rotate the staff image around its own pivot (hilt)
         image_angle = -self.angle + self.orientation_offset
         self.image = pg.transform.rotate(self.base_image, image_angle)
     
@@ -397,14 +431,14 @@ class Mace(Sprite):
         rotated_pivot_to_center = self.pivot_to_center.rotate(image_angle)
 
         # 5. Final sprite center = pivot_world + rotated offset
-        self.rect = self.image.get_rect(center=sword_pivot_world + rotated_pivot_to_center)
+        self.rect = self.image.get_rect(center=staff_pivot_world + rotated_pivot_to_center)
 
 
 
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
             if mob.hit_cd.ready():
-                mob.health -= 20
+                mob.health -= 10 + self.game.player.damage_boost
                 mob.hit_cd.start()
 
                 # Knockback edited to work without game.all_mobs
@@ -412,7 +446,8 @@ class Mace(Sprite):
                 if knockback_dir.length() != 0:
                     knockback_dir = knockback_dir.normalize()
 
-                mob.pos += knockback_dir * 100   # <-- push strength
+                mob.pos += knockback_dir * (100 + self.game.player.knockback_boost)
+   # push strength
         
 class Axe(Sprite):
     def __init__(self, game, player):
@@ -466,14 +501,14 @@ class Axe(Sprite):
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
             if mob.hit_cd.ready():
-                mob.health -= 50
+                mob.health -= 50 + self.player.damage_boost
                 mob.hit_cd.start()
                 
                 # knockback
                 knockback_dir = mob.pos - self.player.pos
                 if knockback_dir.length() != 0:
                     knockback_dir = knockback_dir.normalize()
-                mob.pos += knockback_dir * 30
+                mob.pos += knockback_dir * (30 + self.player.knockback_boost)
 
 
 class Mob(Sprite):
@@ -497,8 +532,8 @@ class Mob(Sprite):
         # self.rect.x = x * TILESIZE[0]
         # self.rect.y = y * TILESIZE[1]
         # speed
-        self.hit_cd = Cooldown(500)
-        self.speed = 5
+        self.hit_cd = Cooldown(1500)
+        self.speed = 3
         self.health = 100
         print(self.pos)
         self.cd = Cooldown(300)
@@ -595,7 +630,7 @@ class Coin(Sprite):
 class Sword(Sprite):
     def __init__(self, game, x, y):
         self.game = game
-        self.groups = game.all_sprites, game.all_weapons, game.all_mobs
+        self.groups = game.all_sprites, game.all_weapons
         Sprite.__init__(self, self.groups)
         self.image = pg.Surface((TILESIZE[0]*2,TILESIZE[1]//2))
         # self.image.fill(WHITE) makes the sword white instead of sprite
@@ -604,20 +639,39 @@ class Sword(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE[0] 
         self.rect.y = y * TILESIZE[1]
+        self.damage = 40
+        self.knockback = 25
+
+        
     def update(self):
-        if self.game.player.dir == vec(-1, 0):  # facing left
+        # updating the sprite based off of each direction
+        if self.game.player.dir == vec(-1, 0):
             self.image = self.game.sword_left_img
-        elif self.game.player.dir == vec(1, 0):  # facing right
+        elif self.game.player.dir == vec(1, 0):
             self.image = self.game.sword_right_img
         elif self.game.player.dir == vec(0, -1):
             self.image = self.game.sword_up_img
         elif self.game.player.dir == vec(0, 1):
             self.image = self.game.sword_down_img
+
         self.rect.x = self.game.player.rect.x + self.game.player.dir.x * 32
         if self.game.player.dir.x < 0:
             self.rect.x = self.game.player.rect.x + self.game.player.dir.x * 64
-            # pg.transform.flip(self.image, True, False)
+
         self.rect.y = self.game.player.rect.y
+
+        # damage
+        hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        for mob in hits:
+            if mob.hit_cd.ready():
+                mob.health -= self.damage + self.game.player.damage_boost
+                mob.hit_cd.start()
+
+                knockback_dir = mob.pos - self.game.player.pos
+                if knockback_dir.length() != 0:
+                    knockback_dir = knockback_dir.normalize()
+                mob.pos += knockback_dir * (30 + self.game.player.knockback_boost)
+
 
 
 
@@ -783,31 +837,39 @@ class Water_Shot(Sprite):
         self.game = game
         self.groups = game.all_sprites, game.all_projectiles
         Sprite.__init__(self, self.groups)
-        self.game = game
-        self.image = pg.Surface((16, 16))
-        # self.image.fill(RED)
+
         self.image = game.projectile_img
-        # self.image.set_colorkey() USE THIS TO REMOVE A BACKGROUND ON A SPRITE
         self.rect = self.image.get_rect()
-        self.vel = dir
-        self.pos = vec(x,y)
-        self.rect.x = x
-        self.rect.y = y
+
+        self.pos = vec(x, y)           # ✅ SAME SYSTEM AS PLAYER
+        self.vel = dir.normalize()    # ✅ ALWAYS MOVE CORRECTLY
+        self.rect.center = self.pos
+
         self.speed = 10
+        self.damage = 25
 
     def update(self):
+        # ✅ MOVE
         self.pos += self.vel * self.speed
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y
-        # Regular walls (breakable)
-        hits = pg.sprite.spritecollide(self, self.game.all_breakable_walls, True)
-        if hits:
-            self.kill()   # break wall + remove projectile
+        self.rect.center = self.pos
 
-        # Indestructible walls 
-        hits2 = pg.sprite.spritecollide(self, self.game.all_walls, False)
-        if hits2:
-            self.kill()   # projectile dies but wall stays
+        # ✅ WALL COLLISION
+        if pg.sprite.spritecollide(self, self.game.all_breakable_walls, True):
+            self.kill()
+
+        if pg.sprite.spritecollide(self, self.game.all_walls, False):
+            self.kill()
+
+        # ✅ ✅ ✅ WATER → MOB DAMAGE
+        hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        for mob in hits:
+            # print("WATER HIT MOB")      # ✅ DEBUG CONFIRMATION
+
+            if mob.hit_cd.ready():
+                mob.health -= self.damage
+                mob.hit_cd.start()
+                self.kill()
+
 
 # ------ POTIONS -------
 
@@ -843,3 +905,35 @@ class Health_Potion(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE[0]
         self.rect.y = y * TILESIZE[1]
+
+class Damage_Potion(Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self.groups = game.all_sprites, game.all_potions
+        Sprite.__init__(self, self.groups)
+        self.image = game.damage_potion_img  # add image in your loader
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE[0]
+        self.rect.y = y * TILESIZE[1]
+
+class Defense_Potion(Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self.groups = game.all_sprites, game.all_potions
+        Sprite.__init__(self, self.groups)
+        self.image = game.defense_potion_img
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE[0]
+        self.rect.y = y * TILESIZE[1]
+
+class Knockback_Potion(Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self.groups = game.all_sprites, game.all_potions
+        Sprite.__init__(self, self.groups)
+        self.image = game.knockback_potion_img
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE[0]
+        self.rect.y = y * TILESIZE[1]
+        
+

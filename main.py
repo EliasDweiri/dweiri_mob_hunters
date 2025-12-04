@@ -4,7 +4,7 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - generated Background_Flower_Field_1024x1024, help with Mace cooldown
+# ChatGPT - generated Background_Flower_Field_1024x1024, help with Staff cooldown, helped with defense potion
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
@@ -42,7 +42,7 @@
 # k - sword
 # o - axe
 # p - water shot
-# i - mace
+# i - staff
 # esc - pause
 
 import math
@@ -94,7 +94,7 @@ class Game:
         self.sword_up_img = pg.image.load(path.join(self.img_folder, "sword_up.png")).convert_alpha()
         self.sword_down_img = pg.image.load(path.join(self.img_folder, "sword_down.png")).convert_alpha()
         self.axe_img = pg.image.load(path.join(self.img_folder, "Axe_5x50.png")).convert_alpha()
-        self.mace_img = pg.image.load(path.join(self.img_folder, "Mace_60x15.png")).convert_alpha()
+        self.staff_img = pg.image.load(path.join(self.img_folder, "Staff_60x15.png")).convert_alpha()
         self.health_potion_img = pg.image.load(path.join(self.img_folder, "Health_Potion_32x32.png")).convert_alpha()
         self.speed_potion_img = pg.image.load(path.join(self.img_folder, "Speed_Potion_32x32.png")).convert_alpha()
 
