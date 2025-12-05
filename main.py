@@ -4,7 +4,7 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - generated Background_Flower_Field_1024x1024, help with Staff cooldown, helped with defense potion
+# ChatGPT - generated Background_Flower_Field_1024x1024, help with weapon cooldown, helped with potions, helped with health mechanics
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
@@ -14,22 +14,20 @@
 
 # GOALS:
 
-# be able to kill mobs
+# be able to kill mobs- COMPLETED
 # Mobs have collision between each other - COMPLETED
 # A sort of wave system where mobs come in waves after they are killed
 # Different weapons - COMPLETED
-# Complete Sprite retexture
 # Background revamp
-# Staring screen ui to choose starting weapons and traits
 # Different levels/difficulties after defeating mobs
 # updated screen health and coin amount counters - COMPLETED
 # mobs have collission against weapons - COMPLETED
-# Screen Text that tells what weapon was last used
-# walking animation
+# walking animation - COMPLETED
 # better mob pathing 
 # update text - COMPLETED
-# Bone weapon (rib)
 # Pause Mechanism - COMPLETED
+# Unlock Weapons when more coins are collected
+# Health bar
 
 
 
@@ -126,6 +124,7 @@ class Game:
         self.all_breakable_walls = pg.sprite.Group()
         self.all_potions = pg.sprite.Group()
         self.potions = pg.sprite.Group()
+        self.damage_numbers = pg.sprite.Group()
 
         # takes the map data and creates the appropriate object for each tile, map maker
         for row, tiles in enumerate(self.map.data):
@@ -186,11 +185,12 @@ class Game:
         countdown = 10
         self.time = countdown - seconds
         # once there are no coins left, spawns more coins
+        #coin spawning
         if len(self.all_coins) == 0:
             for i in range(2, 7):
                 Coin(self, randint(1, 20), randint(1, 20))  
             # print("I'm BROKE!")
-
+        #potion spawning
         if len(self.all_potions) == 0:
             for i in range(2, 4):
                 Speed_Potion(self, randint(1, 20), randint(1, 20))
@@ -214,8 +214,46 @@ class Game:
         self.draw_text(self.screen, f"Health: {self.player.health}", 24, BLACK, 350, 50)
         self.draw_text(self.screen, f"Coins: {self.player.coins}", 24, BLACK, 500, 50)
         self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50)
+        # 1. Draw player with health tint
+        tint_color = self.player.get_health_tint()
+        tinted_image = self.player.image.copy()
+        tinted_image.fill(tint_color, special_flags=pg.BLEND_MULT)
+        self.screen.blit(tinted_image, self.player.rect.topleft)
+
+        #Draw circular health around player
+        # self.player.draw_health_circle(self.screen)
+
+        # Draw damage numbers
+        self.damage_numbers.update()
+        self.damage_numbers.draw(self.screen)
+        # HEALTH BAR
+        self.player.draw_health_bar(self.screen)
         # self.draw_text(self.screen, f"Current Weapon: {self.weapon}", 24, BLACK, 800, 50)
         self.all_sprites.draw(self.screen)
+
+
+        # red border only on the edges
+        red_overlay = pg.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
+
+        # Fade & thickness scale with health
+        health_percent = max(self.player.health / 100, 0)
+
+        red_intensity = int((1 - health_percent) * 180)   # how strong red is
+        border_thickness = int((1 - health_percent) * 100)  # how thick border is
+
+        # so it doesnt break
+        border_thickness = max(5, border_thickness)
+
+        # Top edge
+        pg.draw.rect(red_overlay, (255, 0, 0, red_intensity), (0, 0, WIDTH, border_thickness))
+        # Bottom edge
+        pg.draw.rect(red_overlay, (255, 0, 0, red_intensity), (0, HEIGHT - border_thickness, WIDTH, border_thickness))
+        # Left edge
+        pg.draw.rect(red_overlay, (255, 0, 0, red_intensity), (0, 0, border_thickness, HEIGHT))
+        # Right edge
+        pg.draw.rect(red_overlay, (255, 0, 0, red_intensity), (WIDTH - border_thickness, 0, border_thickness, HEIGHT))
+
+        self.screen.blit(red_overlay, (0, 0))
         pg.display.flip()
 
 

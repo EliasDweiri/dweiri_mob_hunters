@@ -53,6 +53,7 @@ class Player(Sprite):
         self.speed_boost_amount = 0
         self.speed_boost_end_time = 0
         self.speed_timer = 0  # how long the boost lasts
+        #weapon cooldown
         self.staff_cd = Cooldown(2000) 
         self.axe_cd = Cooldown(600)
         # potion effects 
@@ -63,6 +64,63 @@ class Player(Sprite):
         self.damage_timer = 0
         self.defense_timer = 0
         self.knockback_timer = 0
+
+        # damage overlay (screen red tint)
+        self.damage_overlay_alpha = 0      # current alpha value
+        self.damage_overlay_max_alpha = 150 # max red intensity when hit
+        self.damage_overlay_fade_speed = 200 # how fast it fades (alpha per second)
+
+
+
+
+    def get_health_tint(self):
+        health_ratio = max(self.health / 100, 0)
+        r = int(150 + 105 * health_ratio)
+        g = 0
+        b = 0
+        return (r, g, b)
+
+    # def draw_health_circle(self, surface):
+    #     import math
+    #     radius = 30
+    #     center = self.rect.center
+    #     health_ratio = max(self.health / 100, 0)
+    #     # background circle (gray)
+    #     pg.draw.circle(surface, (50, 50, 50), center, radius)
+    #     # foreground arc
+    #     pg.draw.arc(
+    #         surface,
+    #         self.get_health_tint(),
+    #         (center[0]-radius, center[1]-radius, radius*2, radius*2),
+    #         0,
+    #         2 * math.pi * health_ratio,
+    #         5
+    #     )
+    #Heath bar
+    def draw_health_bar(self, surface):
+        # Health bar size
+        bar_width = 40
+        bar_height = 6
+        
+        # Health ratio (0 to 1)
+        ratio = max(self.health / 100, 0)
+        
+        # Choose color based on health
+        if ratio > 0.6:
+            color = (0, 255, 0)  # green
+        elif ratio > 0.3:
+            color = (255, 255, 0)  # yellow
+        else:
+            color = (255, 0, 0)  # red
+        
+        # # Draw background (gray)
+        # bg_rect = pg.Rect(self.rect.centerx - bar_width//2, self.rect.top - 10, bar_width, bar_height)
+        # pg.draw.rect(surface, (100, 100, 100), bg_rect)
+        
+        # Draw health bar
+        health_rect = pg.Rect(self.rect.centerx - bar_width//2, self.rect.top - 10, bar_width * ratio, bar_height)
+        pg.draw.rect(surface, color, health_rect)
+        
 
     def health_potion_pickup(self):
     # Check collision with health potions
@@ -251,6 +309,7 @@ class Player(Sprite):
                     else:
                         self.pos.x = hits[0].rect.left - self.rect.width
                 if self.vel.x < 0:
+                    # detects if the wall is moveable
                     if hits[0].state == "moveable":
                         print("i hit a moveable block...")
                         hits[0].vel.x += self.vel.x
@@ -275,6 +334,7 @@ class Player(Sprite):
                         self.pos.y = hits[0].rect.top - self.rect.height
                 if self.vel.y < 0:
                     if hits[0].state == "moveable":
+                        # detects if the wall is moveable
                         print("i hit a moveable block...")
                         hits[0].vel.y += self.vel.y
                         if len(hits) > 1:
@@ -285,7 +345,7 @@ class Player(Sprite):
                 self.vel.y = 0
                 self.rect.y = self.pos.y
 
-    def collide_with_stuff(self, group, kill):
+    def collide_with_stuff(self, group, kill, damage):
         # collides with mob
         # collides with coin
         # makes collisions happen
@@ -295,6 +355,12 @@ class Player(Sprite):
                 if self.cd.ready():
                     self.health -= max(1, 10 - self.defense_boost)
                     self.cd.start()
+
+                    DamageNumber(self.game, self.rect.centerx, self.rect.centery, damage)
+                    
+                    # Trigger red screen flash
+                    self.damage_overlay_alpha = self.damage_overlay_max_alpha
+
             if str(hits[0].__class__.__name__) == "Coin":
                 self.coins += 1
                 print(self.coins)
@@ -312,45 +378,42 @@ class Player(Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls("y")
         # makes mob collide
-        self.collide_with_stuff(self.game.all_mobs, False)
+        self.collide_with_stuff(self.game.all_mobs, False, max(1, 10 - self.defense_boost))
         # makes coin disappear
-        self.collide_with_stuff(self.game.all_coins, True)
+        self.collide_with_stuff(self.game.all_coins, True, 0)
 
         self.health_potion_pickup()
 
-
-        #  SPEED POTION PICKUP 
-
-        speed_potion_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
-        if speed_potion_hits:
-            print("PLAYER PICKED UP SPEED POTION!")
-            self.speed += 30
-            self.speed_boost_active = True
-            self.speed_timer = pg.time.get_ticks()
-
-        # Remove speed boost after 12 seconds
+        # SPEED POTION TIMER
         if self.speed_boost_active:
             if pg.time.get_ticks() - self.speed_timer >= 12000:
-                print("Speed boost ended.")
-                self.speed -= 50
+                self.speed -= 30
                 self.speed_boost_active = False
-                # if self.attacking:
-                #     Sword(self.game, self.rect.x, self.rect.y)
 
 
-
-        # HEALTH POTION PICKUP
-
-        health_hits = pg.sprite.spritecollide(self, self.game.all_potions, True)
-
-        for potion in health_hits:
-            if isinstance(potion, Health_Potion):
-                print("HEALTH POTION PICKED UP!")
-                self.health += 50
-                if self.health > 100:
-                    self.health = 100
+        # DAMAGE POTION TIMER
+        if self.damage_boost > 0:
+            if pg.time.get_ticks() - self.damage_timer > 10000:
+                self.damage_boost = 0
 
 
+        # DEFENSE POTION TIMER
+        if self.defense_boost > 0:
+            if pg.time.get_ticks() - self.defense_timer > 10000:
+                self.defense_boost = 0
+
+
+        # KNOCKBACK POTION TIMER
+        if self.knockback_boost > 0:
+            if pg.time.get_ticks() - self.knockback_timer > 10000:
+                self.knockback_boost = 0
+
+
+        # fade out red overlay
+        if self.damage_overlay_alpha > 0:
+            self.damage_overlay_alpha -= self.damage_overlay_fade_speed * self.game.dt
+            if self.damage_overlay_alpha < 0:
+                self.damage_overlay_alpha = 0
 
 
         # if not self.cd.ready():
@@ -373,6 +436,30 @@ class Player(Sprite):
         self.health_boost_active = True
         self.health_amount = amount
         self.health += amount
+
+class DamageNumber(pg.sprite.Sprite):
+    def __init__(self, game, x, y, damage):
+        self.game = game
+        self.groups = game.all_sprites, game.damage_numbers
+        pg.sprite.Sprite.__init__(self, self.groups)
+
+        self.font = pg.font.Font(None, 24)
+        self.image = self.font.render(str(damage), True, (255, 0, 0))
+        self.rect = self.image.get_rect(center=(x, y))
+        self.pos = pg.math.Vector2(self.rect.center)
+        self.lifetime = 1000
+        self.spawn_time = pg.time.get_ticks()
+
+    def update(self):
+        self.pos.y -= 0.5
+        self.rect.center = self.pos
+        elapsed = pg.time.get_ticks() - self.spawn_time
+        if elapsed > self.lifetime:
+            self.kill()
+        else:
+            alpha = max(0, 255 - (255 * (elapsed / self.lifetime)))
+            self.image.set_alpha(alpha)
+
 
 # Staff
 class Staff(Sprite):
@@ -860,13 +947,13 @@ class Water_Shot(Sprite):
         if pg.sprite.spritecollide(self, self.game.all_walls, False):
             self.kill()
 
-        #  WATER → MOB DAMAGE
+        #  MOB DAMAGE
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
             
 
             if mob.hit_cd.ready():
-                mob.health -= self.damage
+                mob.health -= self.damage + self.game.player.damage_boost
                 mob.hit_cd.start()
                 self.kill()
 
