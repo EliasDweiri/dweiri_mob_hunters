@@ -16,7 +16,7 @@
 
 # be able to kill mobs- COMPLETED
 # Mobs have collision between each other - COMPLETED
-# A sort of wave system where mobs come in waves after they are killed
+# A sort of wave system where mobs come in waves after they are killed - COMPLETED
 # Different weapons - COMPLETED
 # Background revamp
 # Different levels/difficulties after defeating mobs
@@ -27,7 +27,9 @@
 # update text - COMPLETED
 # Pause Mechanism - COMPLETED
 # Unlock Weapons when more coins are collected
-# Health bar
+# Health bar - COMPLETED
+# mob kill counter: lvl 1 mob with 1 kill, lvl 5 mob worth 5 kills etc.
+# sword, water shot, staff, axe
 
 
 
@@ -145,6 +147,9 @@ class Game:
                 elif tile == "M":
                     Mob(self, col, row)
                 
+
+        # for i in range(5):
+        #     MOb(self, randint(1, 2))
     def run(self):
         # game loop
         while self.playing:
@@ -196,6 +201,15 @@ class Game:
                 Speed_Potion(self, randint(1, 20), randint(1, 20))
                 Health_Potion(self, randint(1, 20), randint(1, 20))
                 Damage_Potion(self, randint(1, 20), randint(1, 20))
+        
+        
+        if len(self.all_mobs) < 5:
+            self.spawn_mobs(1)
+
+    def spawn_mobs(self, num_mobs):
+        for i in range(num_mobs):
+            Mob(self, randint(1,20), randint(1,20))
+
 
     def draw_text(self, surface, text, size, color, x, y):
         # draws text on screen
@@ -235,7 +249,7 @@ class Game:
         # red border only on the edges
         red_overlay = pg.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 
-        # Fade & thickness scale with health
+        # Fade & thickness scale with health, max, return its biggest item
         health_percent = max(self.player.health / 100, 0)
 
         red_intensity = int((1 - health_percent) * 180)   # how strong red is
