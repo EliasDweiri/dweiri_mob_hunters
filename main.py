@@ -29,10 +29,11 @@
 # Unlock Weapons when more coins are collected
 # Health bar - COMPLETED
 # mob kill counter: lvl 1 mob with 1 kill, lvl 5 mob worth 5 kills etc. basically a total score - COMPLETED
-# water shot, sword, staff, axe
-# add a title screen/start screen and end screen
-# give a sprite to the Ogre
-
+# water shot, sword, staff, axe - COMPLETED
+# add a title screen/start screen and end screen - COMPLETED
+# give a sprite to the Ogre, power 2 mob
+# power 3 mob
+# score calculated on death screen
 
 
 # KEYS:
@@ -224,14 +225,13 @@ class Game:
 
     def spawn_mobs(self, num_mobs):
         for i in range(num_mobs):
-
-            # Decide mob power based on kill count
-            if self.mob_kills < 15:
-                power = 1      # normal mobs
-            elif self.mob_kills < 1000: # prob should be 25
-                power = 2      # stronger red mobs
-            else:
-                power = 3      # future boss tier if you want later
+            rand = random.random()  # 0.0 to 1.0
+            if rand < 0.6:          # 60% chance
+                power = 1
+            elif rand < 0.9:        # 30% chance
+                power = 2
+            else:                   # 10% chance
+                power = 3
 
             Mob(self, randint(1,20), randint(1,20), power)
 

@@ -601,10 +601,15 @@ class Axe(Sprite):
 
 class Mob(Sprite):
     def __init__(self, game, x, y, power=1):
-        self.power = power
         self.game = game
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
+        self.image = self.game.mob_img
+        self.power = power
+        self.game = game
+        self.max_health = 50
+        self.damage = 10
+        self.speed = 5
 
         # image & power
         if self.power == 1:
