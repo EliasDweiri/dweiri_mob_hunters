@@ -103,7 +103,8 @@ class Game:
         self.health_potion_img = pg.image.load(path.join(self.img_folder, "Health_Potion_32x32.png")).convert_alpha()
         self.speed_potion_img = pg.image.load(path.join(self.img_folder, "Speed_Potion_32x32.png")).convert_alpha()
         self.damage_potion_img = pg.image.load(path.join(self.img_folder, "Damage_Potion.png")).convert_alpha()
-
+        self.knockback_potion_img = pg.image.load(path.join(self.img_folder, "Knockback_Potion_33x33.png")).convert_alpha()
+        self.defense_potion_img = pg.image.load(path.join(self.img_folder, "Defense_Potion_33x33.png")).convert_alpha()
 
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
@@ -217,10 +218,11 @@ class Game:
                 Speed_Potion(self, randint(1, 20), randint(1, 20))
                 Health_Potion(self, randint(1, 20), randint(1, 20))
                 Damage_Potion(self, randint(1, 20), randint(1, 20))
-        
+                Knockback_Potion(self, randint(1, 20), randint(1, 20))
+                Defense_Potion(self, randint(1, 20), randint(1, 20))
 
         
-        if len(self.all_mobs) < 5:
+        if len(self.all_mobs) < 20:
             self.spawn_mobs(1)
 
     def spawn_mobs(self, num_mobs):

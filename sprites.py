@@ -153,7 +153,7 @@ class Player(Sprite):
 
             # KNOCKBACK
             elif isinstance(potion, Knockback_Potion):
-                self.knockback_boost = 40
+                self.knockback_boost = 80
                 self.knockback_timer = pg.time.get_ticks()
 
 
@@ -533,9 +533,7 @@ class Staff(Sprite):
                 knockback_dir = mob.pos - self.owner.pos
                 if knockback_dir.length() != 0:
                     knockback_dir = knockback_dir.normalize()
-
-                mob.pos += knockback_dir * (100 + self.game.player.knockback_boost)
-   # push strength
+                mob.pos += knockback_dir * (100 + self.game.player.knockback_boost) # push strength
         
 class Axe(Sprite):
     def __init__(self, game, player):
@@ -950,9 +948,11 @@ class Water_Shot(Sprite):
         self.rect.center = self.pos
 
         self.speed = 10
-        self.damage = 30
+        self.damage = 20
 
         self.vel = dir.normalize() if dir.length() != 0 else pg.math.Vector2(0, 0) # so the dir is never (0,0) or else it would crash
+
+        self.knockback = 12
 
     def update(self):
         #  MOVE
@@ -969,13 +969,13 @@ class Water_Shot(Sprite):
         #  MOB DAMAGE
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
-            
+            mob.health -= self.damage
 
-            if mob.hit_cd.ready():
-                mob.health -= self.damage + self.game.player.damage_boost
-                mob.hit_cd.start()
-                self.kill()
+            #  KNOCKBACK
+            knock_dir = (mob.pos - pg.math.Vector2(self.rect.center)).normalize()
+            mob.pos += knock_dir * self.knockback
 
+            self.kill()
 
 # ------ POTIONS -------
 
@@ -1017,7 +1017,7 @@ class Damage_Potion(Sprite):
         self.game = game
         self.groups = game.all_sprites, game.all_potions
         Sprite.__init__(self, self.groups)
-        self.image = game.damage_potion_img  # add image in your loader
+        self.image = game.damage_potion_img  # add image
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE[0]
         self.rect.y = y * TILESIZE[1]
