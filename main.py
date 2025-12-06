@@ -19,7 +19,7 @@
 # A sort of wave system where mobs come in waves after they are killed - COMPLETED
 # Different weapons - COMPLETED
 # Background revamp
-# Different levels/difficulties after defeating mobs
+# Different levels/difficulties after defeating mobs - COMPLETED
 # updated screen health and coin amount counters - COMPLETED
 # mobs have collission against weapons - COMPLETED
 # walking animation - COMPLETED
@@ -28,8 +28,10 @@
 # Pause Mechanism - COMPLETED
 # Unlock Weapons when more coins are collected
 # Health bar - COMPLETED
-# mob kill counter: lvl 1 mob with 1 kill, lvl 5 mob worth 5 kills etc.
-# sword, water shot, staff, axe
+# mob kill counter: lvl 1 mob with 1 kill, lvl 5 mob worth 5 kills etc. basically a total score - COMPLETED
+# water shot, sword, staff, axe
+# add a title screen/start screen and end screen
+# give a sprite to the Ogre
 
 
 
@@ -69,6 +71,8 @@ class Game:
         pg.display.set_caption("MOB HUNTERS")
         self.playing = True
         self.running = True
+        self.total_kills = 0
+        self.mob_kills = 0
 
     # sets up a game folder directory path using the current folder containing this file
     # gives the Game class a map property which uses the Map class to parse the level1.txt file
@@ -202,13 +206,23 @@ class Game:
                 Health_Potion(self, randint(1, 20), randint(1, 20))
                 Damage_Potion(self, randint(1, 20), randint(1, 20))
         
+
         
         if len(self.all_mobs) < 5:
             self.spawn_mobs(1)
 
     def spawn_mobs(self, num_mobs):
         for i in range(num_mobs):
-            Mob(self, randint(1,20), randint(1,20))
+
+            # Decide mob power based on kill count
+            if self.mob_kills < 15:
+                power = 1      # normal mobs
+            elif self.mob_kills < 25:
+                power = 2      # stronger red mobs
+            else:
+                power = 3      # future boss tier if you want later
+
+            Mob(self, randint(1,20), randint(1,20), power)
 
 
     def draw_text(self, surface, text, size, color, x, y):
@@ -225,9 +239,9 @@ class Game:
         # calls on draw_text
         # self.screen.fill(WHITE) # white Background if needed
         self.screen.blit(self.background_img, (0, 0)) # IMG background
-        self.draw_text(self.screen, f"Health: {self.player.health}", 24, BLACK, 350, 50)
+        # self.draw_text(self.screen, f"Health: {self.player.health}", 24, BLACK, 350, 50)
         self.draw_text(self.screen, f"Coins: {self.player.coins}", 24, BLACK, 500, 50)
-        self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50)
+        # self.draw_text(self.screen, f"Cooldown: {self.time}", 24, BLACK, 650, 50) Cooldown on screen 
         # 1. Draw player with health tint
         tint_color = self.player.get_health_tint()
         tinted_image = self.player.image.copy()

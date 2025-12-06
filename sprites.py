@@ -599,31 +599,40 @@ class Axe(Sprite):
 
 
 class Mob(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, power=1):
+        self.power = power
         self.game = game
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
-        # creates the mob
-        # how big the mob is
-        self.image = pg.Surface((32, 32))
-        # mob color
-        self.image = game.mob_img
-        # self.image.set_colorkey() USE THIS TO REMOVE A BACKGROUND ON A SPRITE
+
+        # image & power
+        if self.power == 1:
+            self.image = self.game.mob_img
+            self.max_health = 50
+            self.damage = 10
+            self.speed = 5
+
+        elif self.power == 2:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((32, 32))
+            self.image.fill(RED) # turn power 2 mob into red square
+            self.max_health = 120
+            self.damage = 20
+            self.speed = 5
+
+        # rect
         self.rect = self.image.get_rect()
-        # self.image.fill(RED)
-        # velocity
-        self.vel = vec(choice([-1,1]), choice([-1,1]))
-        # position
+        self.rect.center = (x * TILESIZE[0], y * TILESIZE[1])
+
+        # pos of mob
+        self.vel = vec(choice([-1, 1]), choice([-1, 1]))
         self.pos = vec(x, y) * TILESIZE[0]
-        # mob coordinates
-        # self.rect.x = x * TILESIZE[0]
-        # self.rect.y = y * TILESIZE[1]
-        # speed
+        
+        # health & cooldown
+        self.health = self.max_health
         self.hit_cd = Cooldown(1500)
-        self.speed = 3
-        self.health = 100
-        print(self.pos)
         self.cd = Cooldown(300)
+
 
     def collide_with_walls(self, dir):
         # handles collision with walls
@@ -677,6 +686,8 @@ class Mob(Sprite):
 
     def update(self):
         if self.health <= 0:
+            self.game.total_kills += 1
+            self.game.mob_kills += 1   # <-- add this
             self.kill()
         # mob behavior
         if self.game.player.pos.x > self.pos.x:
@@ -726,7 +737,7 @@ class Sword(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE[0] 
         self.rect.y = y * TILESIZE[1]
-        self.damage = 40
+        self.damage = 50
         self.knockback = 25
 
         
@@ -933,7 +944,7 @@ class Water_Shot(Sprite):
         self.rect.center = self.pos
 
         self.speed = 10
-        self.damage = 25
+        self.damage = 30
 
     def update(self):
         #  MOVE
