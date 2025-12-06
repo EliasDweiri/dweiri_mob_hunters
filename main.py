@@ -284,6 +284,37 @@ class Game:
         self.screen.blit(red_overlay, (0, 0))
         pg.display.flip()
 
+    def wait_for_key(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.running = False
+                if event.type == pg.KEYUP:
+                    waiting = False
+
+    def show_start_screen(self):
+        # game splash/start screen
+      #   pg.mixer.music.load(path.join(self.snd_dir, 'Yippee.ogg'))
+      #   pg.mixer.music.play(loops=-1)
+        self.screen.fill(BLACK)
+        self.draw_text(self.screen,"Mob Hunters", 48, WHITE, WIDTH / 2, HEIGHT / 4)
+        self.draw_text(self.screen,"Click any button to start.", 24, WHITE, WIDTH / 2, 700)
+        self.draw_text(self.screen,"Controls:", 24, WHITE, WIDTH / 4, 350)
+        self.draw_text(self.screen,"w     -     up", 24, WHITE, (WIDTH / 4) + 30, 410)
+        self.draw_text(self.screen,"a     -     left", 24, WHITE, (WIDTH / 4) + 175, 410)
+        self.draw_text(self.screen,"s     -     down", 24, WHITE, (WIDTH / 4) + 320, 410)
+        self.draw_text(self.screen,"d     -     right", 24, WHITE, (WIDTH / 4) + 465, 410)
+        self.draw_text(self.screen,"p     -     water", 24, WHITE, (WIDTH / 4) + 45, 470)
+        self.draw_text(self.screen,"k     -     sword", 24, WHITE, (WIDTH / 4) + 190, 470)
+        self.draw_text(self.screen,"i     -     staff", 24, WHITE, (WIDTH / 4) + 335, 470)
+        self.draw_text(self.screen,"o     -     axe", 24, WHITE, (WIDTH / 4) + 480, 470)
+        self.draw_text(self.screen,"esc     -     pause", 24, WHITE, (WIDTH / 2), 530)
+        pg.display.flip()
+        self.wait_for_key()
+
 
 
     # def wait_for_key(self):
@@ -300,5 +331,7 @@ class Game:
 if __name__ == "__main__":
     # creating an instance or instantiating the Game class
     g = Game()
-    g.new()
-    g.run()
+    g.show_start_screen()
+    while g.running:
+        g.new()
+        g.run()
