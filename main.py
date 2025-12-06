@@ -4,7 +4,7 @@
 # SOURCES:
 
 # Mr. Cozort - created base code - created spin move attack
-# ChatGPT - generated Background_Flower_Field_1024x1024, help with weapon cooldown, helped with potions, helped with health mechanics
+# ChatGPT - generated Background_Flower_Field_1024x1024, help with weapon cooldown, helped with potions, helped with health mechanics, water shot errorwith dir (0,0)
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
@@ -118,6 +118,9 @@ class Game:
 
 
     def new(self):
+        self.playing = True
+        self.total_kills = 0
+        self.mob_kills = 0
         # the sprite Group allows us to update and draw sprite in grouped batches
         self.load_data()
         # create all sprite groups
@@ -148,6 +151,7 @@ class Game:
                     Coin(self, col, row)
                 elif tile == "P":
                     self.player = Player(self, col, row)
+                    self.player.health = 100 # this is here to reset for a new round
                 elif tile == "M":
                     Mob(self, col, row)
                 
@@ -164,13 +168,16 @@ class Game:
             self.update()
             # output
             self.draw()
-        pg.quit()
+
+        if self.player.health <= 0:
+            self.show_game_over_screen()
 
     def events(self):
       for event in pg.event.get():
         if event.type == pg.QUIT:
          #  print("this is happening")
           self.playing = False
+          self.running = False
         if event.type == pg.MOUSEBUTTONDOWN:
            print("I can get input from mousey mouse mouse mousekerson")
         if event.type == pg.KEYDOWN:
@@ -178,16 +185,20 @@ class Game:
               self.player.attacking = True
               self.player.weapon = Sword(self, self.player.rect.x, self.player.rect.y)
         if event.type == pg.KEYUP:
-           if event.key == pg.K_k:
-              self.player.attacking = False
-              self.player.weapon.kill()
-        
+            if event.key == pg.K_k and self.player.weapon:  # check if weapon exists
+                self.player.attacking = False
+                self.player.weapon.kill()
+                
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 pause_game()
 
 
     def update(self):
+        # end game if health is 0 or under
+        if self.player.health <= 0:
+            self.playing = False
+            return
         # creates a countdown timer
         self.all_sprites.update()
         seconds = pg.time.get_ticks() // 1000
@@ -217,7 +228,7 @@ class Game:
             # Decide mob power based on kill count
             if self.mob_kills < 15:
                 power = 1      # normal mobs
-            elif self.mob_kills < 25:
+            elif self.mob_kills < 1000: # prob should be 25
                 power = 2      # stronger red mobs
             else:
                 power = 3      # future boss tier if you want later
@@ -284,17 +295,24 @@ class Game:
         self.screen.blit(red_overlay, (0, 0))
         pg.display.flip()
 
+
     def wait_for_key(self):
         waiting = True
         while waiting:
             self.clock.tick(FPS)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    waiting = False
                     self.running = False
-                if event.type == pg.KEYUP:
-                    waiting = False
+                    self.playing = False  # stop current game loop
+                    waiting = False # exit wait loop
+                elif event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN:
+                    waiting = False # exit wait loop on any key or click
+            pg.display.flip()  # refresh screen so it doesn't freeze
 
+
+        # draw a tiny refresh so window doesn't freeze
+        pg.display.flip()
+     # title screen stuff
     def show_start_screen(self):
         # game splash/start screen
       #   pg.mixer.music.load(path.join(self.snd_dir, 'Yippee.ogg'))
@@ -315,18 +333,14 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
-
-
-    # def wait_for_key(self):
-    #     waiting = True
-    #     while waiting:
-    #         self.colc.tick(FPS)
-    #         for event in pg.event.get()
-
-
-    # def show_start_screen(self):
-    #     self.screen.fill(BLACK)
-
+    # end screen stuff
+    def show_game_over_screen(self):
+        self.screen.fill(BLACK)
+        self.draw_text(self.screen, "GAME OVER", 64, RED, WIDTH / 2, HEIGHT / 4)
+        self.draw_text(self.screen, f"Total Kills: {self.total_kills}", 32, WHITE, WIDTH / 2, HEIGHT / 2)
+        self.draw_text(self.screen, "Press any key to Restart", 24, WHITE, WIDTH / 2, HEIGHT * 0.75)
+        pg.display.flip()
+        self.wait_for_key()
 
 if __name__ == "__main__":
     # creating an instance or instantiating the Game class
@@ -335,3 +349,9 @@ if __name__ == "__main__":
     while g.running:
         g.new()
         g.run()
+        # make sure the window didn't clse before restarting
+        if not g.running:
+            break
+
+    pg.quit()  # close Pygame
+    sys.exit() # exit 

@@ -70,6 +70,7 @@ class Player(Sprite):
         self.damage_overlay_max_alpha = 150 # max red intensity when hit
         self.damage_overlay_fade_speed = 200 # how fast it fades (alpha per second)
 
+        self.weapon = None  # starts with no weapon
 
 
 
@@ -945,6 +946,8 @@ class Water_Shot(Sprite):
 
         self.speed = 10
         self.damage = 30
+
+        self.vel = dir.normalize() if dir.length() != 0 else pg.math.Vector2(0, 0) # so the dir is never (0,0) or else it would crash
 
     def update(self):
         #  MOVE
