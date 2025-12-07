@@ -33,8 +33,8 @@
 # add a title screen/start screen and end screen - COMPLETED
 # give a sprite to the Ogre, power 2 mob
 # power 3 mob
-# score calculated on death screen
-
+# score calculated on death screen - COMPLETED
+# better way of doing potions - COMPLETED
 
 # KEYS:
 
@@ -74,6 +74,10 @@ class Game:
         self.running = True
         self.total_kills = 0
         self.mob_kills = 0
+        self.font = pg.font.Font(None, 50)
+        self.total_score = 0
+        self.displayed_score = 0
+        self.score_speed = 1
 
     # sets up a game folder directory path using the current folder containing this file
     # gives the Game class a map property which uses the Map class to parse the level1.txt file
@@ -123,6 +127,7 @@ class Game:
         self.playing = True
         self.total_kills = 0
         self.mob_kills = 0
+        self.start_time = pg.time.get_ticks()
         # the sprite Group allows us to update and draw sprite in grouped batches
         self.load_data()
         # create all sprite groups
@@ -171,9 +176,6 @@ class Game:
             # output
             self.draw()
 
-        if self.player.health <= 0:
-            self.show_game_over_screen()
-
     def events(self):
       for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -197,8 +199,11 @@ class Game:
 
 
     def update(self):
+        # How many seconds the player survived
+        self.time_survived = (pg.time.get_ticks() - self.start_time) // 1000
         # end game if health is 0 or under
         if self.player.health <= 0:
+            self.show_game_over_screen()  # show death screen immediately
             self.playing = False
             return
         # creates a countdown timer
@@ -212,15 +217,40 @@ class Game:
             for i in range(2, 7):
                 Coin(self, randint(1, 20), randint(1, 20))  
             # print("I'm BROKE!")
-        #potion spawning
-        if len(self.all_potions) == 0:
-            for i in range(2, 4):
-                Speed_Potion(self, randint(1, 20), randint(1, 20))
-                Health_Potion(self, randint(1, 20), randint(1, 20))
-                Damage_Potion(self, randint(1, 20), randint(1, 20))
-                Knockback_Potion(self, randint(1, 20), randint(1, 20))
-                Defense_Potion(self, randint(1, 20), randint(1, 20))
 
+        if not hasattr(self, 'displayed_score'):
+            self.displayed_score = 0
+        if self.displayed_score < self.total_score:
+            # Gradually increment score
+            self.displayed_score += max(1, self.total_score // 120)
+            if self.displayed_score > self.total_score:
+                self.displayed_score = self.total_score
+
+        # potion spawning
+
+        health_count = 0
+        for potion in self.all_potions:
+            if isinstance(potion, Health_Potion):
+                health_count += 1
+
+        #  Always guarantee exactly ONE health potion
+        if health_count == 0:
+            Health_Potion(self, randint(1, 20), randint(1, 20))
+
+        # Speed & Knockback = rare but always possible
+        if random.random() < 0.008:   # 1% chance per frame (rare)
+            Speed_Potion(self, randint(1, 20), randint(1, 20))
+
+        if random.random() < 0.008:   # 1% chance per frame (rare)
+            Knockback_Potion(self, randint(1, 20), randint(1, 20))
+
+        # Damage & Defense unlock after 25 coins
+        if self.player.coins >= 25:
+            if random.random() < 0.02:   # 2% chance (unlocked)
+                Damage_Potion(self, randint(1, 20), randint(1, 20))
+
+            if random.random() < 0.02:
+                Defense_Potion(self, randint(1, 20), randint(1, 20))
         
         if len(self.all_mobs) < 20:
             self.spawn_mobs(1)
@@ -248,7 +278,7 @@ class Game:
         surface.blit(text_surface, text_rect)
 
     def draw(self):
-        
+        font_name = pg.font.match_font('impact') 
         # calls on draw_text
         # self.screen.fill(WHITE) # white Background if needed
         self.screen.blit(self.background_img, (0, 0)) # IMG background
@@ -261,6 +291,8 @@ class Game:
         tinted_image.fill(tint_color, special_flags=pg.BLEND_MULT)
         self.screen.blit(tinted_image, self.player.rect.topleft)
 
+
+       
         #Draw circular health around player
         # self.player.draw_health_circle(self.screen)
 
@@ -298,22 +330,30 @@ class Game:
         pg.display.flip()
 
 
-    def wait_for_key(self):
+
+
+    def wait_for_key(self, delay=0):
         waiting = True
+        start_time = pg.time.get_ticks()
+
         while waiting:
             self.clock.tick(FPS)
+
+            # Only allow input AFTER the delay passes
+            allow_input = (pg.time.get_ticks() - start_time) >= delay
+
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.running = False
-                    self.playing = False  # stop current game loop
-                    waiting = False # exit wait loop
-                elif event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN:
-                    waiting = False # exit wait loop on any key or click
-            pg.display.flip()  # refresh screen so it doesn't freeze
+                    self.playing = False
+                    waiting = False
+
+                elif allow_input and (event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN):
+                    waiting = False
+
+            pg.display.flip()
 
 
-        # draw a tiny refresh so window doesn't freeze
-        pg.display.flip()
      # title screen stuff
     def show_start_screen(self):
         # game splash/start screen
@@ -337,12 +377,63 @@ class Game:
 
     # end screen stuff
     def show_game_over_screen(self):
-        self.screen.fill(BLACK)
-        self.draw_text(self.screen, "GAME OVER", 64, RED, WIDTH / 2, HEIGHT / 4)
-        self.draw_text(self.screen, f"Total Kills: {self.total_kills}", 32, WHITE, WIDTH / 2, HEIGHT / 2)
-        self.draw_text(self.screen, "Press any key to Restart", 24, WHITE, WIDTH / 2, HEIGHT * 0.75)
-        pg.display.flip()
-        self.wait_for_key()
+        self.displayed_score = 0
+        self.total_score = self.calculate_score()
+        self.score_speed = max(1, self.total_score // 120)  # How fast the score rolls
+
+        running_screen = True
+        while running_screen:
+            self.clock.tick(FPS)
+
+            # Handle events
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self.running = False
+                    self.playing = False
+                    running_screen = False
+                elif event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN:
+                    running_screen = False  # exit death screen
+
+            # Fill background
+            self.screen.fill(BLACK)
+
+            # Draw texts
+            self.draw_text(self.screen, "GAME OVER", 64, RED, WIDTH / 2, HEIGHT / 4)
+            self.draw_text(self.screen, f"Total Kills: {self.total_kills}", 32, WHITE, WIDTH / 2, HEIGHT / 2)
+            self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
+
+            # Update rolling score
+            # Update rolling score manually
+            if self.displayed_score < self.total_score:
+                self.displayed_score += max(1, self.total_score // 120)
+                if self.displayed_score > self.total_score:
+                    self.displayed_score = self.total_score
+
+            impact_font = pg.font.Font(pg.font.match_font('impact'), 35)
+            rolling_text = impact_font.render(f"Score: {self.displayed_score}", True, WHITE)
+            self.screen.blit(rolling_text, (WIDTH / 2 - 76, HEIGHT / 2 + 125))
+
+            # Update the display
+            pg.display.flip()
+
+
+    def calculate_score(self):
+        potion_score = self.player.potions_collected * 100
+        time_score = self.time_survived * 100
+        coin_score = self.player.coins * 100
+        potion_score = self.player.potions_collected * 100
+
+        mob_score = 0
+        for mob in self.all_mobs:
+            if mob.power == 1:
+                mob_score += 5
+            elif mob.power == 2:
+                mob_score += 10
+            elif mob.power == 3:
+                mob_score += 20
+
+        total_score = time_score + coin_score + potion_score + mob_score
+        return total_score
 
 if __name__ == "__main__":
     # creating an instance or instantiating the Game class

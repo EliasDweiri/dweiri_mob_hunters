@@ -72,6 +72,7 @@ class Player(Sprite):
 
         self.weapon = None  # starts with no weapon
 
+        self.potions_collected = 0  # track potions collected
 
 
     def get_health_tint(self):
@@ -157,7 +158,9 @@ class Player(Sprite):
                 self.knockback_timer = pg.time.get_ticks()
 
 
-
+            # Increment total potions collected
+            self.player.potions_collected += 1
+            
     def rotate(self):
         pass
 
