@@ -158,8 +158,9 @@ class Player(Sprite):
                 self.knockback_timer = pg.time.get_ticks()
 
 
-            # Increment total potions collected
-            self.player.potions_collected += 1
+            # increase total potions collected
+            self.potions_collected += 1
+
             
     def rotate(self):
         pass

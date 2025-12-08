@@ -379,11 +379,16 @@ class Game:
     def show_game_over_screen(self):
         self.displayed_score = 0
         self.total_score = self.calculate_score()
-        self.score_speed = max(1, self.total_score // 120)  # How fast the score rolls
+        self.score_speed = max(1, self.total_score // 120)
+
+        lock_time = 3500  # 3.5 seconds input lock
+        start_time = pg.time.get_ticks()
 
         running_screen = True
         while running_screen:
             self.clock.tick(FPS)
+
+            allow_input = (pg.time.get_ticks() - start_time) >= lock_time
 
             # Handle events
             for event in pg.event.get():
@@ -391,8 +396,9 @@ class Game:
                     self.running = False
                     self.playing = False
                     running_screen = False
-                elif event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN:
-                    running_screen = False  # exit death screen
+
+                elif allow_input and (event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN):
+                    running_screen = False  # Only exits AFTER 3.5 sec
 
             # Fill background
             self.screen.fill(BLACK)
@@ -400,10 +406,13 @@ class Game:
             # Draw texts
             self.draw_text(self.screen, "GAME OVER", 64, RED, WIDTH / 2, HEIGHT / 4)
             self.draw_text(self.screen, f"Total Kills: {self.total_kills}", 32, WHITE, WIDTH / 2, HEIGHT / 2)
-            self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
 
-            # Update rolling score
-            # Update rolling score manually
+            if allow_input:
+                self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
+            else:
+                self.draw_text(self.screen, "Loading Score...", 24, WHITE, WIDTH / 2, 700)
+
+            # score animation
             if self.displayed_score < self.total_score:
                 self.displayed_score += max(1, self.total_score // 120)
                 if self.displayed_score > self.total_score:
@@ -413,8 +422,8 @@ class Game:
             rolling_text = impact_font.render(f"Score: {self.displayed_score}", True, WHITE)
             self.screen.blit(rolling_text, (WIDTH / 2 - 76, HEIGHT / 2 + 125))
 
-            # Update the display
             pg.display.flip()
+
 
 
     def calculate_score(self):
