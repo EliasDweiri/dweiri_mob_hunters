@@ -78,6 +78,7 @@ class Game:
         self.total_score = 0
         self.displayed_score = 0
         self.score_speed = 1
+        self.wave = 1
 
     # sets up a game folder directory path using the current folder containing this file
     # gives the Game class a map property which uses the Map class to parse the level1.txt file
@@ -159,8 +160,8 @@ class Game:
                 elif tile == "P":
                     self.player = Player(self, col, row)
                     self.player.health = 100 # this is here to reset for a new round
-                elif tile == "M":
-                    Mob(self, col, row)
+                # elif tile == "M":
+                #     Mob(self, col, row)
                 
 
         # for i in range(5):
@@ -244,28 +245,81 @@ class Game:
         if random.random() < 0.008:   # 1% chance per frame (rare)
             Knockback_Potion(self, randint(1, 20), randint(1, 20))
 
-        # Damage & Defense unlock after 25 coins
-        if self.player.coins >= 25:
-            if random.random() < 0.02:   # 2% chance (unlocked)
+        
+        # Damage & Defense unlock after 21 mobs killed
+        if self.mob_kills >= 21:
+            if random.random() < 0.02:   # 2% chance to spawn
                 Damage_Potion(self, randint(1, 20), randint(1, 20))
 
             if random.random() < 0.02:
                 Defense_Potion(self, randint(1, 20), randint(1, 20))
+
         
-        if len(self.all_mobs) < 20:
-            self.spawn_mobs(1)
 
-    def spawn_mobs(self, num_mobs):
-        for i in range(num_mobs):
-            rand = random.random()  # 0.0 to 1.0
-            if rand < 0.6:          # 60% chance
-                power = 1
-            elif rand < 0.9:        # 30% chance
-                power = 2
-            else:                   # 10% chance
-                power = 3
 
+
+
+        # mobs spawning in waves
+        if len(self.all_mobs) == 0:   # only spawn when last wave is dead
+            self.spawn_wave()
+
+    def spawn_mobs(self, num, power):
+        for i in range(num):
             Mob(self, randint(1,20), randint(1,20), power)
+
+
+    def spawn_wave(self):
+        # Show pre-wave countdown
+        self.show_wave_countdown(self.wave)
+
+        # Then spawn the actual mobs
+        if self.wave == 1:
+            self.spawn_mobs(1, power=1)
+        elif self.wave == 2:
+            self.spawn_mobs(5, power=1)
+        elif self.wave == 3:
+            self.spawn_mobs(15, power=1)
+        elif self.wave == 4:
+            self.spawn_mobs(1, power=2)
+        elif self.wave == 5:
+            self.spawn_mobs(5, power=2)
+        elif self.wave == 6:
+            self.spawn_mobs(15, power=2)
+        # elif self.wave == 7:
+           # NOT IMPLEMENTED
+
+        # advance to next wave
+        self.wave += 1
+
+
+    def show_wave_countdown(self, wave_number):
+        # Duration for each message in milliseconds
+        display_time = 1000  # 1 second per message
+
+        # Messages to display
+        messages = [f"WAVE {wave_number}", "1", "2", "3"]
+
+        for msg in messages:
+            start_time = pg.time.get_ticks()
+            while pg.time.get_ticks() - start_time < display_time:
+                self.clock.tick(FPS)
+                self.screen.fill(BLACK)
+                self.draw_text(self.screen, msg, 64, WHITE, WIDTH // 2, HEIGHT // 2)
+                pg.display.flip()
+
+
+    # old mobs spawning
+    # def spawn_mobs(self, num_mobs):
+    #     for i in range(num_mobs):
+    #         rand = random.random()  # 0.0 to 1.0
+    #         if rand < 0.6:          # 60% chance
+    #             power = 1
+    #         elif rand < 0.9:        # 30% chance
+    #             power = 2
+    #         else:                   # 10% chance
+    #             power = 3
+
+    #         Mob(self, randint(1,20), randint(1,20), power)
 
 
     def draw_text(self, surface, text, size, color, x, y):

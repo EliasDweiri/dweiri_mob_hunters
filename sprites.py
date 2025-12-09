@@ -695,7 +695,7 @@ class Mob(Sprite):
     def update(self):
         if self.health <= 0:
             self.game.total_kills += 1
-            self.game.mob_kills += 1   # <-- add this
+            self.game.mob_kills += 1   
             self.kill()
         # mob behavior
         if self.game.player.pos.x > self.pos.x:
@@ -959,27 +959,39 @@ class Water_Shot(Sprite):
         self.knockback = 12
 
     def update(self):
-        #  MOVE
+        # MOVE
         self.pos += self.vel * self.speed
         self.rect.center = self.pos
 
-        #  WALL COLLISION
+        # WALL COLLISION
         if pg.sprite.spritecollide(self, self.game.all_breakable_walls, True):
             self.kill()
+            return
 
         if pg.sprite.spritecollide(self, self.game.all_walls, False):
             self.kill()
+            return
 
-        #  MOB DAMAGE
+        # MOB COLLISION & DAMAGE + KNOCKBACK
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
+            # deal damage
             mob.health -= self.damage
 
-            #  KNOCKBACK
-            knock_dir = (mob.pos - pg.math.Vector2(self.rect.center)).normalize()
-            mob.pos += knock_dir * self.knockback
+            # compute knockback direction
+            knock_dir = (mob.pos - self.pos)
+            if knock_dir.length() == 0:
+                knock_dir = pg.math.Vector2(1, 0)
+            else:
+                knock_dir = knock_dir.normalize()
 
+            # apply knockback TO MOB (not projectile)
+            mob.pos += knock_dir * self.knockback
+            mob.rect.center = mob.pos
+
+            # destroy projectile after hitting
             self.kill()
+            return
 
 # ------ POTIONS -------
 
