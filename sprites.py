@@ -74,6 +74,9 @@ class Player(Sprite):
 
         self.potions_collected = 0  # track potions collected
 
+        self.potions_collected = 0
+
+        self.hit_cd = Cooldown(1000)  # 1 second invulnerability after hit
 
     def get_health_tint(self):
         health_ratio = max(self.health / 100, 0)
@@ -158,9 +161,8 @@ class Player(Sprite):
                 self.knockback_timer = pg.time.get_ticks()
 
 
-            # increase total potions collected
+            # Increment total potions collected
             self.potions_collected += 1
-
             
     def rotate(self):
         pass
@@ -350,25 +352,31 @@ class Player(Sprite):
                 self.vel.y = 0
                 self.rect.y = self.pos.y
 
-    def collide_with_stuff(self, group, kill, damage):
-        # collides with mob
-        # collides with coin
-        # makes collisions happen
-        hits = pg.sprite.spritecollide(self, group, kill)
-        if hits: 
-            if str(hits[0].__class__.__name__) == "Mob":
-                if self.cd.ready():
-                    self.health -= max(1, 10 - self.defense_boost)
-                    self.cd.start()
 
-                    DamageNumber(self.game, self.rect.centerx, self.rect.centery, damage)
-                    
-                    # Trigger red screen flash
-                    self.damage_overlay_alpha = self.damage_overlay_max_alpha
 
-            if str(hits[0].__class__.__name__) == "Coin":
-                self.coins += 1
-                print(self.coins)
+
+    def collide_with_stuff(self):
+        # mob damage
+        mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+
+        for mob in mob_hits:
+            if self.hit_cd.ready():
+                damage = max(0, mob.damage - self.defense_boost)
+                self.health -= damage
+                self.hit_cd.start()
+
+                DamageNumber(self.game, self.rect.centerx, self.rect.centery, damage)
+
+                # red screen flash
+                self.damage_overlay_alpha = self.damage_overlay_max_alpha
+
+        # coin pickup
+        coin_hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
+
+        for coin in coin_hits:
+            self.coins += 1
+            print(self.coins)
+
 
     def update(self):
         # self.EffectTrail
@@ -383,9 +391,8 @@ class Player(Sprite):
         self.rect.y = self.pos.y
         self.collide_with_walls("y")
         # makes mob collide
-        self.collide_with_stuff(self.game.all_mobs, False, max(1, 10 - self.defense_boost))
-        # makes coin disappear
-        self.collide_with_stuff(self.game.all_coins, True, 0)
+        self.collide_with_stuff()
+        
 
         self.health_potion_pickup()
 
@@ -610,7 +617,7 @@ class Mob(Sprite):
         self.power = power
         self.game = game
         self.max_health = 50
-        self.damage = 10
+        self.damage = 0
         self.speed = 5
 
         # image & power
@@ -618,15 +625,26 @@ class Mob(Sprite):
             self.image = self.game.mob_img
             self.max_health = 50
             self.damage = 10
-            self.speed = 5
+            self.speed = 3
 
         elif self.power == 2:
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
-            self.image.fill(RED) # turn power 2 mob into red square
+            self.image.fill(RED) # 
             self.max_health = 120
             self.damage = 20
-            self.speed = 5
+            self.speed = 4
+
+        # 3 digit power to represent boss wave, power 1 Boss
+        elif self.power == 101:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((64, 64))
+            self.image = self.game.mob_boss1_img
+            # self.image.fill(BLACK) # 
+            self.max_health = 800
+            self.health = self.max_health
+            self.damage = 25
+            self.speed = 4.5
 
         # rect
         self.rect = self.image.get_rect()
@@ -641,6 +659,27 @@ class Mob(Sprite):
         self.hit_cd = Cooldown(1500)
         self.cd = Cooldown(300)
 
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+        self.draw_health_bar(surface)
+
+    def draw_health_bar(self, surface):
+        if self.max_health <= 0:
+            return
+            
+        bar_width = 40
+        bar_height = 6
+        health_ratio = self.health / self.max_health
+
+        # health bar position above the mob
+        x = self.rect.centerx - bar_width // 2
+        y = self.rect.top - 10
+
+        # background (red)
+        pg.draw.rect(surface, (255, 0, 0), (x, y, bar_width, bar_height))
+
+        # filled portion (green)
+        pg.draw.rect(surface, (0, 255, 0), (x, y, bar_width * health_ratio, bar_height))
 
     def collide_with_walls(self, dir):
         # handles collision with walls
@@ -695,7 +734,7 @@ class Mob(Sprite):
     def update(self):
         if self.health <= 0:
             self.game.total_kills += 1
-            self.game.mob_kills += 1   
+            self.game.mob_kills += 1   # <-- add this
             self.kill()
         # mob behavior
         if self.game.player.pos.x > self.pos.x:
@@ -959,39 +998,27 @@ class Water_Shot(Sprite):
         self.knockback = 12
 
     def update(self):
-        # MOVE
+        #  MOVE
         self.pos += self.vel * self.speed
         self.rect.center = self.pos
 
-        # WALL COLLISION
+        #  WALL COLLISION
         if pg.sprite.spritecollide(self, self.game.all_breakable_walls, True):
             self.kill()
-            return
 
         if pg.sprite.spritecollide(self, self.game.all_walls, False):
             self.kill()
-            return
 
-        # MOB COLLISION & DAMAGE + KNOCKBACK
+        #  MOB DAMAGE
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
-            # deal damage
             mob.health -= self.damage
 
-            # compute knockback direction
-            knock_dir = (mob.pos - self.pos)
-            if knock_dir.length() == 0:
-                knock_dir = pg.math.Vector2(1, 0)
-            else:
-                knock_dir = knock_dir.normalize()
-
-            # apply knockback TO MOB (not projectile)
+            #  KNOCKBACK
+            knock_dir = (mob.pos - pg.math.Vector2(self.rect.center)).normalize()
             mob.pos += knock_dir * self.knockback
-            mob.rect.center = mob.pos
 
-            # destroy projectile after hitting
             self.kill()
-            return
 
 # ------ POTIONS -------
 

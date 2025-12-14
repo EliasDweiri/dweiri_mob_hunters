@@ -46,7 +46,7 @@
 # o - axe
 # p - water shot
 # i - staff
-# esc - pause
+# tab - pause
 
 import math
 import random
@@ -110,6 +110,7 @@ class Game:
         self.damage_potion_img = pg.image.load(path.join(self.img_folder, "Damage_Potion.png")).convert_alpha()
         self.knockback_potion_img = pg.image.load(path.join(self.img_folder, "Knockback_Potion_33x33.png")).convert_alpha()
         self.defense_potion_img = pg.image.load(path.join(self.img_folder, "Defense_Potion_33x33.png")).convert_alpha()
+        self.mob_boss1_img = pg.image.load(path.join(self.img_folder, "Coal_Man_Boss_64x64.png")).convert_alpha()  # PUT FILE HERE
 
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
@@ -161,7 +162,7 @@ class Game:
                     self.player = Player(self, col, row)
                     self.player.health = 100 # this is here to reset for a new round
                 # elif tile == "M":
-                #     Mob(self, col, row)
+                #     Mob(self, col, row) # old mob spawning
                 
 
         # for i in range(5):
@@ -183,8 +184,24 @@ class Game:
          #  print("this is happening")
           self.playing = False
           self.running = False
-        if event.type == pg.MOUSEBUTTONDOWN:
-           print("I can get input from mousey mouse mouse mousekerson")
+
+        if event.type == pg.KEYDOWN:
+
+            # ESC quits game completely
+            if event.key == pg.K_ESCAPE:
+                self.playing = False
+                self.running = False
+
+            # TAB toggles pause
+            if event.key == pg.K_TAB:
+                self.paused = not getattr(self, "paused", False)
+
+            # prevent controls from working while paused
+            if getattr(self, "paused", False):
+                return
+            
+        # if event.type == pg.MOUSEBUTTONDOWN:
+        #    print("I can get input from mousey mouse mouse mousekerson")
         if event.type == pg.KEYDOWN:
            if event.key == pg.K_k:
               self.player.attacking = True
@@ -194,12 +211,15 @@ class Game:
                 self.player.attacking = False
                 self.player.weapon.kill()
                 
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_ESCAPE:
-                pause_game()
+        
+        # if event.type == pg.KEYUP:
+        #     if event.key == pg.K_TAB:
+        #         self.play_game == False
 
 
     def update(self):
+        if getattr(self, "paused", False):
+            return
         # How many seconds the player survived
         self.time_survived = (pg.time.get_ticks() - self.start_time) // 1000
         # end game if health is 0 or under
@@ -239,34 +259,45 @@ class Game:
             Health_Potion(self, randint(1, 20), randint(1, 20))
 
         # Speed & Knockback = rare but always possible
-        if random.random() < 0.008:   # 1% chance per frame (rare)
+        if random.random() < 0.005:   # 1% chance per frame
             Speed_Potion(self, randint(1, 20), randint(1, 20))
 
-        if random.random() < 0.008:   # 1% chance per frame (rare)
+        if random.random() < 0.005:   # 1% chance per frame 
             Knockback_Potion(self, randint(1, 20), randint(1, 20))
 
-        
-        # Damage & Defense unlock after 21 mobs killed
+        # Damage & Defense unlock after 25 coins
         if self.mob_kills >= 21:
-            if random.random() < 0.02:   # 2% chance to spawn
+            if random.random() < 0.005:   # 2% chance to spawn
                 Damage_Potion(self, randint(1, 20), randint(1, 20))
 
-            if random.random() < 0.02:
+            if random.random() < 0.005:
                 Defense_Potion(self, randint(1, 20), randint(1, 20))
-
         
 
-
-
-
         # mobs spawning in waves
-        if len(self.all_mobs) == 0:   # only spawn when last wave is dead
+        if self.all_mobs_dead(): # only spawn when last wave is dead
+            self.clear_potions()
             self.spawn_wave()
+ 
+   
+    def all_mobs_dead(self):
+        # Return True if NO mobs are alive and visible in the game area 
+        for mob in self.all_mobs:
+            if mob.alive():
+                # Check if mob is within the visible screen
+                if 0 <= mob.rect.centerx <= WIDTH and 0 <= mob.rect.centery <= HEIGHT:
+                    return False    # There is at least ONE valid mob alive
+        return True  # No live mobs found on-screen
+
+
+    def clear_potions(self):
+        for p in list(self.all_potions):
+            p.kill()
+
 
     def spawn_mobs(self, num, power):
         for i in range(num):
             Mob(self, randint(1,20), randint(1,20), power)
-
 
     def spawn_wave(self):
         # Show pre-wave countdown
@@ -280,11 +311,17 @@ class Game:
         elif self.wave == 3:
             self.spawn_mobs(15, power=1)
         elif self.wave == 4:
-            self.spawn_mobs(1, power=2)
+            self.spawn_mobs(50, power=1)
         elif self.wave == 5:
-            self.spawn_mobs(5, power=2)
+            self.spawn_mobs(1, power= 101)
         elif self.wave == 6:
+            self.spawn_mobs(1, power=2)
+        elif self.wave == 7:
+            self.spawn_mobs(5, power=2)
+        elif self.wave == 8:
             self.spawn_mobs(15, power=2)
+        elif self.wave == 9:
+            self.spawn_mobs(50, power=2)
         # elif self.wave == 7:
            # NOT IMPLEMENTED
 
@@ -297,14 +334,14 @@ class Game:
         display_time = 1000  # 1 second per message
 
         # Messages to display
-        messages = [f"WAVE {wave_number}", "1", "2", "3"]
+        messages = [f"WAVE {wave_number}", "3", "2", "1", "GO!"]
 
         for msg in messages:
             start_time = pg.time.get_ticks()
             while pg.time.get_ticks() - start_time < display_time:
                 self.clock.tick(FPS)
                 self.screen.fill(BLACK)
-                self.draw_text(self.screen, msg, 64, WHITE, WIDTH // 2, HEIGHT // 2)
+                self.draw_text(self.screen, msg, 64, WHITE, WIDTH // 2, HEIGHT // 2 - 64)
                 pg.display.flip()
 
 
@@ -320,6 +357,7 @@ class Game:
     #             power = 3
 
     #         Mob(self, randint(1,20), randint(1,20), power)
+
 
 
     def draw_text(self, surface, text, size, color, x, y):
@@ -356,7 +394,12 @@ class Game:
         # HEALTH BAR
         self.player.draw_health_bar(self.screen)
         # self.draw_text(self.screen, f"Current Weapon: {self.weapon}", 24, BLACK, 800, 50)
-        self.all_sprites.draw(self.screen)
+        # self.all_sprites.draw(self.screen)
+        for sprite in self.all_sprites:
+            if hasattr(sprite, "draw"):
+                sprite.draw(self.screen)
+            else:
+                self.screen.blit(sprite.image, sprite.rect)
 
 
         # red border only on the edges
@@ -425,7 +468,8 @@ class Game:
         self.draw_text(self.screen,"k     -     sword", 24, WHITE, (WIDTH / 4) + 190, 470)
         self.draw_text(self.screen,"i     -     staff", 24, WHITE, (WIDTH / 4) + 335, 470)
         self.draw_text(self.screen,"o     -     axe", 24, WHITE, (WIDTH / 4) + 480, 470)
-        self.draw_text(self.screen,"esc     -     pause", 24, WHITE, (WIDTH / 2), 530)
+        self.draw_text(self.screen,"Tab     -     pause", 24, WHITE, (WIDTH / 2) + 100, 530)
+        self.draw_text(self.screen,"Esc     -     Quit", 24, WHITE, (WIDTH / 2) - 100, 530)
         pg.display.flip()
         self.wait_for_key()
 
@@ -433,16 +477,11 @@ class Game:
     def show_game_over_screen(self):
         self.displayed_score = 0
         self.total_score = self.calculate_score()
-        self.score_speed = max(1, self.total_score // 120)
-
-        lock_time = 3500  # 3.5 seconds input lock
-        start_time = pg.time.get_ticks()
+        self.score_speed = max(1, self.total_score // 120)  # How fast the score rolls
 
         running_screen = True
         while running_screen:
             self.clock.tick(FPS)
-
-            allow_input = (pg.time.get_ticks() - start_time) >= lock_time
 
             # Handle events
             for event in pg.event.get():
@@ -450,9 +489,8 @@ class Game:
                     self.running = False
                     self.playing = False
                     running_screen = False
-
-                elif allow_input and (event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN):
-                    running_screen = False  # Only exits AFTER 3.5 sec
+                elif event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN:
+                    running_screen = False  # exit death screen
 
             # Fill background
             self.screen.fill(BLACK)
@@ -460,13 +498,10 @@ class Game:
             # Draw texts
             self.draw_text(self.screen, "GAME OVER", 64, RED, WIDTH / 2, HEIGHT / 4)
             self.draw_text(self.screen, f"Total Kills: {self.total_kills}", 32, WHITE, WIDTH / 2, HEIGHT / 2)
+            self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
 
-            if allow_input:
-                self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
-            else:
-                self.draw_text(self.screen, "Loading Score...", 24, WHITE, WIDTH / 2, 700)
-
-            # score animation
+            # Update rolling scorete
+            # Update rolling score manually
             if self.displayed_score < self.total_score:
                 self.displayed_score += max(1, self.total_score // 120)
                 if self.displayed_score > self.total_score:
@@ -474,15 +509,15 @@ class Game:
 
             impact_font = pg.font.Font(pg.font.match_font('impact'), 35)
             rolling_text = impact_font.render(f"Score: {self.displayed_score}", True, WHITE)
-            self.screen.blit(rolling_text, (WIDTH / 2 - 76, HEIGHT / 2 + 125))
+            self.screen.blit(rolling_text, (WIDTH / 2 - 100, HEIGHT / 2 + 125))
 
+            # Update the display
             pg.display.flip()
-
 
 
     def calculate_score(self):
         potion_score = self.player.potions_collected * 100
-        time_score = self.time_survived * 100
+        time_score = self.time_survived * 1000
         coin_score = self.player.coins * 100
         potion_score = self.player.potions_collected * 100
 
