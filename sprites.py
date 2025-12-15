@@ -55,7 +55,7 @@ class Player(Sprite):
         self.speed_timer = 0  # how long the boost lasts
         #weapon cooldown
         self.staff_cd = Cooldown(2000) 
-        self.axe_cd = Cooldown(600)
+        self.axe_cd = Cooldown(800)
         # potion effects 
         self.damage_boost = 0
         self.defense_boost = 0
@@ -76,7 +76,10 @@ class Player(Sprite):
 
         self.potions_collected = 0
 
-        self.hit_cd = Cooldown(1000)  # 1 second invulnerability after hit
+        self.hit_cd = Cooldown(1500)  # 1 second invulnerability after hit
+
+        self.water_cd = Cooldown(400)   # milliseconds
+
 
     def get_health_tint(self):
         health_ratio = max(self.health / 100, 0)
@@ -239,22 +242,34 @@ class Player(Sprite):
 
 
         # AXE
-        if keys[pg.K_o]:
+        if keys == pg.K_o and self.unlocked_weapons["axe"]:
             if self.axe_cd.ready():
                 Axe(self.game, self)
                 self.axe_cd.start()
 
 
-        if keys[pg.K_i]:  # Key to use Staff
+        if keys == pg.K_i and self.unlocked_weapons["staff"]:  # Key to use Staff
             # Only spawn a Staff if cooldown is ready AND no other Staff exists
             if self.staff_cd.ready() and not any(isinstance(s, Staff) for s in self.game.all_sprites):
                 Staff(self.game, self)   # Spawn the Staff
                 self.staff_cd.start()    # Start cooldown
 
 
-        if keys[pg.K_p]:
-            p = Water_Shot(self.game, self.rect.x, self.rect.y, self.dir)
+        if keys[pg.K_p] and self.water_cd.ready() and self.game.water_unlocked:
+            direction = self.dir
 
+            if direction.length() == 0:
+                direction = vec(1, 0)
+            else:
+                direction = direction.normalize()
+
+            Water_Shot(
+                self.game,
+                self.rect.centerx,
+                self.rect.centery,
+                direction
+            )
+            self.water_cd.start()
 
         # sword is found in events in main
 
@@ -618,12 +633,17 @@ class Mob(Sprite):
         self.game = game
         self.max_health = 50
         self.damage = 0
-        self.speed = 5
+        self.speed = 0
 
-        # image & power
+
+
+
+
+        # ----REGULAR MOBS----
+
         if self.power == 1:
             self.image = self.game.mob_img
-            self.max_health = 50
+            self.max_health = 100
             self.damage = 10
             self.speed = 3
 
@@ -631,9 +651,28 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
             self.image.fill(RED) # 
-            self.max_health = 120
+            self.max_health = 150
+            self.damage = 15
+            self.speed = 3.5
+        
+        elif self.power == 3:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((32, 32))
+            self.image.fill(TURQUOISE) # 
+            self.max_health = 200
             self.damage = 20
             self.speed = 4
+
+        elif self.power == 4:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((32, 32))
+            self.image.fill(GREEN) # 
+            self.max_health = 250
+            self.damage = 25
+            self.speed = 4.5
+
+
+        # ----BOSS MOBS----
 
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 101:
@@ -643,8 +682,41 @@ class Mob(Sprite):
             # self.image.fill(BLACK) # 
             self.max_health = 800
             self.health = self.max_health
-            self.damage = 25
+            self.damage = 20
             self.speed = 4.5
+        
+        # 3 digit power to represent boss wave, power 1 Boss
+        elif self.power == 102:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((64, 64))
+            # self.image = self.game.mob_boss1_img
+            self.image.fill(BLACK)
+            self.max_health = 1000
+            self.health = self.max_health
+            self.damage = 25
+            self.speed = 5.25
+
+        # 3 digit power to represent boss wave, power 1 Boss
+        elif self.power == 103:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((64, 64))
+            # self.image = self.game.mob_boss1_img
+            self.image.fill(ORANGE) 
+            self.max_health = 1100
+            self.health = self.max_health
+            self.damage = 30
+            self.speed = 6
+
+        # 3 digit power to represent boss wave, power 1 Boss
+        elif self.power == 104:
+            # self.image = self.game.mob_img.copy()
+            self.image = pg.Surface((64, 64))
+            # self.image = self.game.mob_boss1_img
+            self.image.fill(GREY) 
+            self.max_health = 1200
+            self.health = self.max_health
+            self.damage = 35
+            self.speed = 7
 
         # rect
         self.rect = self.image.get_rect()

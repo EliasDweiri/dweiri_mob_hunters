@@ -3,8 +3,8 @@
 
 # SOURCES:
 
-# Mr. Cozort - created base code - created spin move attack
-# ChatGPT - generated Background_Flower_Field_1024x1024, help with weapon cooldown, helped with potions, helped with health mechanics, water shot errorwith dir (0,0)
+# Mr. Cozort - created base code - created spin attack
+# ChatGPT - generated Background_Flower_Field_1024x1024, bug fixes, and animated score
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
@@ -79,6 +79,13 @@ class Game:
         self.displayed_score = 0
         self.score_speed = 1
         self.wave = 1
+        self.sword_unlocked = False
+        self.staff_unlocked = False
+        self.axe_unlocked = False
+        self.water_unlocked = True      # starting weapon
+        self.unlock_message = None
+        self.unlock_message_time = 0
+       
 
     # sets up a game folder directory path using the current folder containing this file
     # gives the Game class a map property which uses the Map class to parse the level1.txt file
@@ -202,14 +209,17 @@ class Game:
             
         # if event.type == pg.MOUSEBUTTONDOWN:
         #    print("I can get input from mousey mouse mouse mousekerson")
+        # sword 
         if event.type == pg.KEYDOWN:
-           if event.key == pg.K_k:
-              self.player.attacking = True
-              self.player.weapon = Sword(self, self.player.rect.x, self.player.rect.y)
+            if event.key == pg.K_k and self.sword_unlocked: # makes it locked until certain
+                self.player.attacking = True
+                self.player.weapon = Sword(self, self.player.rect.x, self.player.rect.y)
+
         if event.type == pg.KEYUP:
-            if event.key == pg.K_k and self.player.weapon:  # check if weapon exists
+            if event.key == pg.K_k and self.player.weapon:
                 self.player.attacking = False
                 self.player.weapon.kill()
+
                 
         
         # if event.type == pg.KEYUP:
@@ -259,15 +269,15 @@ class Game:
             Health_Potion(self, randint(1, 20), randint(1, 20))
 
         # Speed & Knockback = rare but always possible
-        if random.random() < 0.005:   # 1% chance per frame
+        if random.random() < 0.005:   # chance of spawn
             Speed_Potion(self, randint(1, 20), randint(1, 20))
 
-        if random.random() < 0.005:   # 1% chance per frame 
+        if random.random() < 0.005:   
             Knockback_Potion(self, randint(1, 20), randint(1, 20))
 
-        # Damage & Defense unlock after 25 coins
-        if self.mob_kills >= 21:
-            if random.random() < 0.005:   # 2% chance to spawn
+        # Damage & Defense 
+        if self.mob_kills >= 47: # when wave 3 is reached
+            if random.random() < 0.005:   
                 Damage_Potion(self, randint(1, 20), randint(1, 20))
 
             if random.random() < 0.005:
@@ -302,28 +312,84 @@ class Game:
     def spawn_wave(self):
         # Show pre-wave countdown
         self.show_wave_countdown(self.wave)
+        
 
         # Then spawn the actual mobs
         if self.wave == 1:
-            self.spawn_mobs(1, power=1)
+            self.spawn_mobs(1, 1) # self.spawn_mobs(  amount of mobs spawned , strength of the mobs  )
+
         elif self.wave == 2:
-            self.spawn_mobs(5, power=1)
+            self.spawn_mobs(5, 1)
+
         elif self.wave == 3:
-            self.spawn_mobs(15, power=1)
+            self.spawn_mobs(15, 1)
+
         elif self.wave == 4:
-            self.spawn_mobs(50, power=1)
+            self.spawn_mobs(25, 1)
+
         elif self.wave == 5:
-            self.spawn_mobs(1, power= 101)
+            self.spawn_mobs(1, 101) # boss mob, three digits for boss, but still considered power 1
+
         elif self.wave == 6:
-            self.spawn_mobs(1, power=2)
+            self.sword_unlocked = True
+            self.unlock_message = "SWORD UNLOCKED!"
+            self.unlock_message_time = pg.time.get_ticks()
+
+            self.spawn_mobs(1, 2)
         elif self.wave == 7:
-            self.spawn_mobs(5, power=2)
+
+            self.spawn_mobs(5, 2)
         elif self.wave == 8:
-            self.spawn_mobs(15, power=2)
+
+            self.spawn_mobs(15, 2)
         elif self.wave == 9:
-            self.spawn_mobs(50, power=2)
-        # elif self.wave == 7:
-           # NOT IMPLEMENTED
+
+            self.spawn_mobs(25, 2)
+        elif self.wave == 10:
+
+            self.spawn_mobs(1, 102) 
+        elif self.wave == 11:
+            self.staff_unlocked = True
+            self.unlock_message = "STAFF UNLOCKED!"
+            self.unlock_message_time = pg.time.get_ticks()
+            self.spawn_mobs(1, 3)
+
+        elif self.wave == 12:
+            self.spawn_mobs(5, 3)
+
+        elif self.wave == 13:
+            self.spawn_mobs(15, 3)
+
+        elif self.wave == 14:
+            self.spawn_mobs(25, 3) 
+
+        elif self.wave == 15:
+            self.spawn_mobs(1, 103) 
+
+        elif self.wave == 16:
+            self.axe_unlocked = True
+            self.unlock_message = "AXE UNLOCKED!"
+            self.unlock_message_time = pg.time.get_ticks()
+            self.spawn_mobs(1, 4)
+
+        elif self.wave == 17:
+            self.spawn_mobs(5, 4)
+
+        elif self.wave == 18:
+            self.spawn_mobs(15, 4)
+
+        elif self.wave == 19:
+            self.spawn_mobs(25, 4)
+
+        elif self.wave == 20:
+            self.spawn_mobs(1, 104) 
+
+        elif self.wave == 21:
+            self.spawn_mobs(5, 101)
+            self.spawn_mobs(5, 102)
+            self.spawn_mobs(5, 103)
+            self.spawn_mobs(5, 104)
+        
 
         # advance to next wave
         self.wave += 1
@@ -424,6 +490,22 @@ class Game:
         pg.draw.rect(red_overlay, (255, 0, 0, red_intensity), (WIDTH - border_thickness, 0, border_thickness, HEIGHT))
 
         self.screen.blit(red_overlay, (0, 0))
+
+
+        # Draw sword unlock message 
+        if self.unlock_message:
+            if pg.time.get_ticks() - self.unlock_message_time < 2000:
+                self.draw_text(
+                    self.screen,
+                    self.unlock_message,
+                    48,
+                    (BLACK),  # gold
+                    WIDTH // 2,
+                    HEIGHT // 2 - 150
+                )
+            else:
+                self.unlock_message = None
+
         pg.display.flip()
 
 
