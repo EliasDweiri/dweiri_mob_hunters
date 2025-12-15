@@ -26,15 +26,19 @@
 # better mob pathing 
 # update text - COMPLETED
 # Pause Mechanism - COMPLETED
-# Unlock Weapons when more coins are collected
+# Unlock Weapons when mobs are killed - COMPLETED
 # Health bar - COMPLETED
 # mob kill counter: lvl 1 mob with 1 kill, lvl 5 mob worth 5 kills etc. basically a total score - COMPLETED
 # water shot, sword, staff, axe - COMPLETED
 # add a title screen/start screen and end screen - COMPLETED
 # give a sprite to the Ogre, power 2 mob
-# power 3 mob
+# power 3 mob - COMPLETED
 # score calculated on death screen - COMPLETED
 # better way of doing potions - COMPLETED
+# bosses can break blocks
+# speed potion goes away after 12 seconds - COMPLETED
+# mobs are killed when they are kicked out of the map
+
 
 # KEYS:
 

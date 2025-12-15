@@ -34,6 +34,9 @@ class Player(Sprite):
         self.pos = vec(x, y) * TILESIZE[0]
         # speed
         self.speed = 300
+        self.base_speed = 300
+        self.speed = self.base_speed
+        #health
         self.health = 100
         # coins
         self.coins = 0
@@ -84,9 +87,7 @@ class Player(Sprite):
     def get_health_tint(self):
         health_ratio = max(self.health / 100, 0)
         r = int(150 + 105 * health_ratio)
-        g = 0
-        b = 0
-        return (r, g, b)
+        return (r)
 
     # def draw_health_circle(self, surface):
     #     import math
@@ -144,9 +145,8 @@ class Player(Sprite):
 
             # SPEED 
             elif isinstance(potion, Speed_Potion):
-                self.speed += 30
-                self.speed_timer = pg.time.get_ticks()
-                self.speed_boost_active = True
+                self.apply_speed_boost(65, 12000)
+
 
             # DAMAGE
             elif isinstance(potion, Damage_Potion):
@@ -412,10 +412,11 @@ class Player(Sprite):
         self.health_potion_pickup()
 
         # SPEED POTION TIMER
-        if self.speed_boost_active:
-            if pg.time.get_ticks() - self.speed_timer >= 12000:
-                self.speed -= 30
-                self.speed_boost_active = False
+        if self.speed_boost_active and pg.time.get_ticks() >= self.speed_boost_end_time:
+            self.speed = self.base_speed
+            self.speed_boost_active = False
+            self.speed_boost_amount = 0
+
 
 
         # DAMAGE POTION TIMER
@@ -456,8 +457,9 @@ class Player(Sprite):
     def apply_speed_boost(self, amount, duration):
         self.speed_boost_active = True
         self.speed_boost_amount = amount
-        self.speed += amount
+        self.speed = self.base_speed + amount
         self.speed_boost_end_time = pg.time.get_ticks() + duration
+
     
     def apply_health_boost(self, amount):
         self.health_boost_active = True
@@ -634,7 +636,11 @@ class Mob(Sprite):
         self.max_health = 50
         self.damage = 0
         self.speed = 0
-
+        # stuck detection
+        self.last_pos = self.pos.copy()
+        self.stuck_timer = 0
+        self.time_stuck = 1500  # milliseconds
+        self.stuck_distance = 5 
 
 
 
@@ -643,7 +649,7 @@ class Mob(Sprite):
 
         if self.power == 1:
             self.image = self.game.mob_img
-            self.max_health = 100
+            self.max_health = 75
             self.damage = 10
             self.speed = 3
 
@@ -651,7 +657,7 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
             self.image.fill(RED) # 
-            self.max_health = 150
+            self.max_health = 125
             self.damage = 15
             self.speed = 3.5
         
@@ -659,7 +665,7 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
             self.image.fill(TURQUOISE) # 
-            self.max_health = 200
+            self.max_health = 175
             self.damage = 20
             self.speed = 4
 
@@ -667,7 +673,7 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
             self.image.fill(GREEN) # 
-            self.max_health = 250
+            self.max_health = 225
             self.damage = 25
             self.speed = 4.5
 
@@ -730,6 +736,26 @@ class Mob(Sprite):
         self.health = self.max_health
         self.hit_cd = Cooldown(1500)
         self.cd = Cooldown(300)
+
+    def break_walls_if_stuck(self, dt):
+        # distance moved since last check
+        if self.pos.distance_to(self.last_pos) <= self.stuck_distance:
+            self.stuck_timer += dt
+        else:
+            self.stuck_timer = 0
+            self.last_pos = self.pos.copy()
+            return
+
+        # if stuck long enough → break walls
+        if self.stuck_timer >= self.time_stuck:
+            hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+            for wall in hits:
+                wall.kill()  # BREAK WALL (even indestructible)
+
+            # reset so it doesn't spam
+            self.stuck_timer = 0
+            self.last_pos = self.pos.copy()
+
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
@@ -828,6 +854,9 @@ class Mob(Sprite):
         # updating mob v mob collision
         self.collide_with_mobs('x')
         self.collide_with_mobs('y')
+
+        self.break_walls_if_stuck(self.game.dt)
+
  
 class Coin(Sprite):
     def __init__(self, game, x, y):
