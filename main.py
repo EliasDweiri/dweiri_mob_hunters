@@ -141,6 +141,16 @@ class Game:
 
 
     def new(self):
+
+        self.wave = 1
+        self.sword_unlocked = False
+        self.staff_unlocked = False
+        self.axe_unlocked = False
+        self.water_unlocked = True
+        self.total_score = 0
+        self.displayed_score = 0
+        self.game_over_time = None
+        self.paused = False
         self.playing = True
         self.total_kills = 0
         self.mob_kills = 0
@@ -637,15 +647,11 @@ class Game:
         return total_score
 
 if __name__ == "__main__":
-    # creating an instance or instantiating the Game class
     g = Game()
-    g.show_start_screen()
     while g.running:
+        g.show_start_screen()
         g.new()
         g.run()
-        # make sure the window didn't clse before restarting
-        if not g.running:
-            break
 
-    pg.quit()  # close Pygame
-    sys.exit() # exit 
+    pg.quit()
+    sys.exit()
