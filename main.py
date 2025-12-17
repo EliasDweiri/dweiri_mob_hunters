@@ -3,8 +3,8 @@
 
 # SOURCES:
 
-# Mr. Cozort - created base code - created spin attack
-# ChatGPT - generated Background_Flower_Field_1024x1024, bug fixes, and animated score
+# Mr. Cozort - created base code, created spin attack
+# ChatGPT - bug fixes, and animated score, assisted with boss attacks, 
 # Sprites - Created in https://www.piskelapp.com/p/create/sprite/ by Elias Dweiri
 
 # Game Music: 
@@ -18,12 +18,11 @@
 # Mobs have collision between each other - COMPLETED
 # A sort of wave system where mobs come in waves after they are killed - COMPLETED
 # Different weapons - COMPLETED
-# Background revamp
+# Background revamp - COMPLETED
 # Different levels/difficulties after defeating mobs - COMPLETED
 # updated screen health and coin amount counters - COMPLETED
 # mobs have collission against weapons - COMPLETED
 # walking animation - COMPLETED
-# better mob pathing 
 # update text - COMPLETED
 # Pause Mechanism - COMPLETED
 # Unlock Weapons when mobs are killed - COMPLETED
@@ -31,14 +30,13 @@
 # mob kill counter: lvl 1 mob with 1 kill, lvl 5 mob worth 5 kills etc. basically a total score - COMPLETED
 # water shot, sword, staff, axe - COMPLETED
 # add a title screen/start screen and end screen - COMPLETED
-# give a sprite to the Ogre, power 2 mob
+# give a sprite to the power 2 mob
 # power 3 mob - COMPLETED
 # score calculated on death screen - COMPLETED
 # better way of doing potions - COMPLETED
-# bosses can break blocks
 # speed potion goes away after 12 seconds - COMPLETED
 # mobs are killed when they are kicked out of the map - COMPLETED
-# fix game loop when player dies
+# fix game loop when player dies - COMPLETED
 # win screen - COMPLETED
 
 # KEYS:
@@ -111,7 +109,8 @@ class Game:
         self.coin_img = pg.image.load(path.join(self.img_folder, "Emerald_Coin_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.wall_img = pg.image.load(path.join(self.img_folder, "Cobblestone_Wall_32x32.png")).convert_alpha()  # PUT FILE HERE
         self.projectile_img = pg.image.load(path.join(self.img_folder, "Water_Projectile_16x16.png")).convert_alpha()  # PUT FILE HERE
-        self.background_img = pg.image.load(path.join(self.img_folder, "Background_Flower_Field_1024x768.png")).convert_alpha()  # PUT FILE HERE
+        self.background_img = pg.image.load(path.join(self.img_folder, "Ground.png")).convert_alpha()
+        self.background_img = pygame.transform.scale(self.background_img, (WIDTH, HEIGHT))
         self.player_running_left = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Left_32x32.png")).convert_alpha() # PUTFILE HERE
         self.player_running_right = pg.image.load(path.join(self.img_folder, "Diamond_Man_Running_Right_32x32.png")).convert_alpha() # PUTFILE HERE
         self.sword_left_img = pg.image.load(path.join(self.img_folder, "sword_left.png")).convert_alpha()
@@ -126,6 +125,13 @@ class Game:
         self.knockback_potion_img = pg.image.load(path.join(self.img_folder, "Knockback_Potion_33x33.png")).convert_alpha()
         self.defense_potion_img = pg.image.load(path.join(self.img_folder, "Defense_Potion_33x33.png")).convert_alpha()
         self.mob_boss1_img = pg.image.load(path.join(self.img_folder, "Coal_Man_Boss_64x64.png")).convert_alpha()  # PUT FILE HERE
+        self.mobp2_img = pg.image.load(path.join(self.img_folder, "Power2Mob_32x32.png")).convert_alpha()  # PUT FILE HERE
+        self.mob_boss2_img = pg.image.load(path.join(self.img_folder, "Power2BossMob_64x64.png")).convert_alpha()  # PUT FILE HERE
+        self.mobp3_img = pg.image.load(path.join(self.img_folder, "Power3Mob_32x32.png")).convert_alpha()  # PUT FILE HERE
+        self.mob_boss3_img = pg.image.load(path.join(self.img_folder, "Power3BossMob_64x64.png")).convert_alpha()  # PUT FILE HERE
+        self.mobp4_img = pg.image.load(path.join(self.img_folder, "Power4Mob_32x32.png")).convert_alpha()  # PUT FILE HERE
+        self.mob_boss4_img = pg.image.load(path.join(self.img_folder, "Power4BossMob_64x64.png")).convert_alpha()  # PUT FILE HERE
+
 
         # self.spin_move1_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32.png")).convert_alpha()  # PUT FILE HERE
         # self.spin_move2_img = pg.image.load(path.join(self.img_folder, "Diamond_Man_32x32_r1.png")).convert_alpha()  # PUT FILE HERE
@@ -343,13 +349,13 @@ class Game:
             self.spawn_mobs(1, 1) # self.spawn_mobs(  amount of mobs spawned , strength of the mobs  )
 
         elif self.wave == 2:
-            self.spawn_mobs(1, 1)
+            self.spawn_mobs(3, 1)
 
         elif self.wave == 3:
-            self.spawn_mobs(1, 1)
+            self.spawn_mobs(8, 1)
 
         elif self.wave == 4:
-            self.spawn_mobs(1, 1)
+            self.spawn_mobs(15, 1)
 
         elif self.wave == 5:
             self.spawn_mobs(1, 101) # boss mob, three digits for boss, but still considered power 1
@@ -362,13 +368,13 @@ class Game:
             self.spawn_mobs(1, 2)
         elif self.wave == 7:
 
-            self.spawn_mobs(5, 2)
+            self.spawn_mobs(3, 2)
         elif self.wave == 8:
 
-            self.spawn_mobs(15, 2)
+            self.spawn_mobs(8, 2)
         elif self.wave == 9:
 
-            self.spawn_mobs(25, 2)
+            self.spawn_mobs(15, 2)
         elif self.wave == 10:
 
             self.spawn_mobs(1, 102) 
@@ -379,13 +385,13 @@ class Game:
             self.spawn_mobs(1, 3)
 
         elif self.wave == 12:
-            self.spawn_mobs(5, 3)
+            self.spawn_mobs(3, 3)
 
         elif self.wave == 13:
-            self.spawn_mobs(15, 3)
+            self.spawn_mobs(8, 3)
 
         elif self.wave == 14:
-            self.spawn_mobs(25, 3) 
+            self.spawn_mobs(15, 3) 
 
         elif self.wave == 15:
             self.spawn_mobs(1, 103) 
@@ -397,13 +403,13 @@ class Game:
             self.spawn_mobs(1, 4)
 
         elif self.wave == 17:
-            self.spawn_mobs(5, 4)
+            self.spawn_mobs(3, 4)
 
         elif self.wave == 18:
-            self.spawn_mobs(15, 4)
+            self.spawn_mobs(8, 4)
 
         elif self.wave == 19:
-            self.spawn_mobs(25, 4)
+            self.spawn_mobs(15, 4)
 
         elif self.wave == 20:
             self.spawn_mobs(1, 104) 

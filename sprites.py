@@ -646,7 +646,7 @@ class Mob(Sprite):
         self.dash_start_time = 0
 
 
-        # ---- BOSS ATTACK SYSTEM ----
+        # boss attack system
         self.is_boss = self.power >= 100
 
         if self.is_boss:
@@ -662,8 +662,7 @@ class Mob(Sprite):
             self.dash_dir = vec(0, 0)
 
 
-        # ----REGULAR MOBS----
-
+        # mobs
         if self.power == 1:
             self.image = self.game.mob_img
             self.max_health = 75
@@ -674,7 +673,8 @@ class Mob(Sprite):
         elif self.power == 2:
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
-            self.image.fill(RED) # 
+            # self.image.fill(RED) 
+            self.image = self.game.mobp2_img 
             self.max_health = 125
             self.damage = 15
             self.speed = 3.5
@@ -682,7 +682,8 @@ class Mob(Sprite):
         elif self.power == 3:
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
-            self.image.fill(TURQUOISE) # 
+            # self.image.fill(TURQUOISE)
+            self.image = self.game.mobp3_img 
             self.max_health = 175
             self.damage = 20
             self.speed = 4
@@ -690,7 +691,8 @@ class Mob(Sprite):
         elif self.power == 4:
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((32, 32))
-            self.image.fill(GREEN) # 
+            # self.image.fill(GREEN)
+            self.image = self.game.mobp4_img  
             self.max_health = 225
             self.damage = 25
             self.speed = 4.5
@@ -714,7 +716,8 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((64, 64))
             # self.image = self.game.mob_boss1_img
-            self.image.fill(BLACK)
+            # self.image.fill(BLACK)
+            self.image = self.game.mob_boss2_img
             self.max_health = 1000
             self.health = self.max_health
             self.damage = 25
@@ -725,7 +728,8 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((64, 64))
             # self.image = self.game.mob_boss1_img
-            self.image.fill(ORANGE) 
+            # self.image.fill(ORANGE) 
+            self.image = self.game.mob_boss3_img
             self.max_health = 1100
             self.health = self.max_health
             self.damage = 30
@@ -736,7 +740,8 @@ class Mob(Sprite):
             # self.image = self.game.mob_img.copy()
             self.image = pg.Surface((64, 64))
             # self.image = self.game.mob_boss1_img
-            self.image.fill(GREY) 
+            # self.image.fill(GREY) 
+            self.image = self.game.mob_boss4_img
             self.max_health = 1200
             self.health = self.max_health
             self.damage = 35
