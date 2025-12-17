@@ -37,9 +37,9 @@
 # better way of doing potions - COMPLETED
 # bosses can break blocks
 # speed potion goes away after 12 seconds - COMPLETED
-# mobs are killed when they are kicked out of the map
+# mobs are killed when they are kicked out of the map - COMPLETED
 # fix game loop when player dies
-# win screen
+# win screen - COMPLETED
 
 # KEYS:
 
@@ -90,6 +90,9 @@ class Game:
         self.water_unlocked = True      # starting weapon
         self.unlock_message = None
         self.unlock_message_time = 0
+        self.game_over_time = None
+        self.score_pause_done = False
+
        
 
     # sets up a game folder directory path using the current folder containing this file
@@ -234,15 +237,20 @@ class Game:
 
 
     def update(self):
-        if getattr(self, "paused", False):
-            return
+
         # How many seconds the player survived
         self.time_survived = (pg.time.get_ticks() - self.start_time) // 1000
         # end game if health is 0 or under
+
         if self.player.health <= 0:
             self.show_game_over_screen()  # show death screen immediately
             self.playing = False
             return
+
+        if getattr(self, "paused", False):
+            return
+        
+
         # creates a countdown timer
         self.all_sprites.update()
         seconds = pg.time.get_ticks() // 1000
@@ -391,10 +399,10 @@ class Game:
             self.spawn_mobs(1, 104) 
 
         elif self.wave == 21:
-            self.spawn_mobs(5, 101)
-            self.spawn_mobs(5, 102)
-            self.spawn_mobs(5, 103)
-            self.spawn_mobs(5, 104)
+            self.spawn_mobs(2, 101)
+            self.spawn_mobs(2, 102)
+            self.spawn_mobs(2, 103)
+            self.spawn_mobs(2, 104)
         
 
         # advance to next wave
@@ -514,9 +522,6 @@ class Game:
 
         pg.display.flip()
 
-
-
-
     def wait_for_key(self, delay=0):
         waiting = True
         start_time = pg.time.get_ticks()
@@ -567,9 +572,15 @@ class Game:
         self.total_score = self.calculate_score()
         self.score_speed = max(1, self.total_score // 120)  # How fast the score rolls
 
+        lock_time = 3500  # 3.5 seconds input lock
+        start_time = pg.time.get_ticks()
+
+
         running_screen = True
         while running_screen:
             self.clock.tick(FPS)
+
+            allow_input = (pg.time.get_ticks() - start_time) >= lock_time
 
             # Handle events
             for event in pg.event.get():
@@ -577,8 +588,9 @@ class Game:
                     self.running = False
                     self.playing = False
                     running_screen = False
-                elif event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN:
-                    running_screen = False  # exit death screen
+
+                elif allow_input and (event.type == pg.KEYDOWN or event.type == pg.MOUSEBUTTONDOWN):
+                    running_screen = False  # Only exits AFTER 3.5 sec
 
             # Fill background
             self.screen.fill(BLACK)
@@ -586,10 +598,13 @@ class Game:
             # Draw texts
             self.draw_text(self.screen, "GAME OVER", 64, RED, WIDTH / 2, HEIGHT / 4)
             self.draw_text(self.screen, f"Total Kills: {self.total_kills}", 32, WHITE, WIDTH / 2, HEIGHT / 2)
-            self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
-
+            if allow_input:
+                self.draw_text(self.screen, "Click any button to Restart", 24, WHITE, WIDTH / 2, 700)
+            else:
+                self.draw_text(self.screen, "Loading Score...", 24, WHITE, WIDTH / 2, 700)
             # Update rolling scorete
             # Update rolling score manually
+            # score animation
             if self.displayed_score < self.total_score:
                 self.displayed_score += max(1, self.total_score // 120)
                 if self.displayed_score > self.total_score:
