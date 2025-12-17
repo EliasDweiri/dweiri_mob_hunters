@@ -8,6 +8,8 @@ from random import choice
 from os import path
 import pygame
 import math
+import random
+
 vec = pg.math.Vector2
  
 class Player(Sprite):
@@ -636,13 +638,28 @@ class Mob(Sprite):
         self.max_health = 50
         self.damage = 0
         self.speed = 0
-        # stuck detection
-        self.last_pos = self.pos.copy()
-        self.stuck_timer = 0
-        self.time_stuck = 1500  # milliseconds
-        self.stuck_distance = 5 
+
+        self.dashing = False
+        self.dash_dir = vec(0, 0)
+        self.dash_speed = 12
+        self.dash_time = 300  # ms
+        self.dash_start_time = 0
 
 
+        # ---- BOSS ATTACK SYSTEM ----
+        self.is_boss = self.power >= 100
+
+        if self.is_boss:
+            self.attack_cd = Cooldown(500)   # general attack selector
+            self.current_attack = None
+
+            self.wide_shot_cd = Cooldown(500)     # 0.5s
+            self.circle_cd = Cooldown(3000)
+            self.ground_cd = Cooldown(4000)
+            self.dash_cd = Cooldown(2500)
+
+            self.dashing = False
+            self.dash_dir = vec(0, 0)
 
 
         # ----REGULAR MOBS----
@@ -652,6 +669,7 @@ class Mob(Sprite):
             self.max_health = 75
             self.damage = 10
             self.speed = 3
+            
 
         elif self.power == 2:
             # self.image = self.game.mob_img.copy()
@@ -689,7 +707,7 @@ class Mob(Sprite):
             self.max_health = 800
             self.health = self.max_health
             self.damage = 20
-            self.speed = 4.5
+            self.speed = 5
         
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 102:
@@ -700,7 +718,7 @@ class Mob(Sprite):
             self.max_health = 1000
             self.health = self.max_health
             self.damage = 25
-            self.speed = 5.25
+            self.speed = 5.75
 
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 103:
@@ -711,7 +729,7 @@ class Mob(Sprite):
             self.max_health = 1100
             self.health = self.max_health
             self.damage = 30
-            self.speed = 6
+            self.speed = 6.5
 
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 104:
@@ -722,7 +740,7 @@ class Mob(Sprite):
             self.max_health = 1200
             self.health = self.max_health
             self.damage = 35
-            self.speed = 7
+            self.speed = 7.25
 
         # rect
         self.rect = self.image.get_rect()
@@ -731,30 +749,163 @@ class Mob(Sprite):
         # pos of mob
         self.vel = vec(choice([-1, 1]), choice([-1, 1]))
         self.pos = vec(x, y) * TILESIZE[0]
+
+        # stuck detection
+        # self.stuck_timer = 0
+        # self.time_stuck = 1.5 
         
         # health & cooldown
         self.health = self.max_health
         self.hit_cd = Cooldown(1500)
         self.cd = Cooldown(300)
 
-    def break_walls_if_stuck(self, dt):
-        # distance moved since last check
-        if self.pos.distance_to(self.last_pos) <= self.stuck_distance:
-            self.stuck_timer += dt
-        else:
-            self.stuck_timer = 0
-            self.last_pos = self.pos.copy()
+        # boss attack cds
+        self.boss_attack_cd = Cooldown(2500)  # time between attacks (2.5s)
+        self.dash_cd = Cooldown(6000)          # dash MUCH less frequent
+        self.wide_shot_cd = Cooldown(1200)
+
+        # dashing cds
+        self.dashing = False
+        self.dash_speed = 6     # MUCH slower dash
+        self.dash_dir = vec(0, 0)
+        self.dash_end_time = 0
+
+
+    # def break_walls_if_stuck(self, dt):
+    #     hits = pg.sprite.spritecollide(self, self.game.all_walls, True)
+
+    #     if hits:
+    #         print("STUCK:", round(self.stuck_timer, 2))
+
+
+    #     if hits:
+    #         self.stuck_timer += dt
+    #     else:
+    #         self.stuck_timer = 0
+    #         return
+
+    #     if self.stuck_timer >= self.time_stuck:
+    #         for wall in hits:
+    #             wall.kill()
+
+    #         self.stuck_timer = 0
+
+    # boss attacks
+    def wide_shot_attack(self):
+        if not self.wide_shot_cd.ready():
             return
 
-        # if stuck long enough → break walls
-        if self.stuck_timer >= self.time_stuck:
-            hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
-            for wall in hits:
-                wall.kill()  # BREAK WALL (even indestructible)
+        base_dir = (self.game.player.pos - self.pos)
+        if base_dir.length() == 0:
+            base_dir = vec(1, 0)
+        base_dir = base_dir.normalize()
 
-            # reset so it doesn't spam
-            self.stuck_timer = 0
-            self.last_pos = self.pos.copy()
+        spread = [-30, -15, 0, 15, 30]
+
+        for angle in spread:
+            Boss_Projectile(
+                self.game,
+                self.rect.centerx,
+                self.rect.centery,
+                base_dir.rotate(angle),
+                damage=8
+            )
+
+        self.wide_shot_cd.start()
+
+
+    # circle around boss attack
+    def circle_attack(self):
+        Boss_Aura_Effect(
+            self.game,
+            self,          # PASS THE BOSS SPRITE
+            radius=90,
+            damage=12,
+            duration=600
+        )
+
+    # 6 circle attack
+    def ground_zone_attack(self):
+        center = vec(self.rect.center)
+        spacing = 80  # farther apart
+
+        # spaces out the circles
+        offsets = [
+            vec(-spacing, 0),
+            vec(spacing, 0),
+            vec(0, -spacing),
+            vec(0, spacing),
+            vec(-spacing, -spacing),
+            vec(spacing, spacing),
+        ]
+
+        for offset in offsets:
+            Boss_Damage_Zone(
+                self.game,
+                center + offset,
+                radius=40,
+                duration=2200,
+                damage=7,
+                tick_rate=150
+            )
+
+
+    # dash attack
+    def dash_attack(self):
+        if not self.dash_cd.ready():
+            return
+
+        self.dashing = True
+
+        self.dash_dir = (self.game.player.pos - self.pos)
+        if self.dash_dir.length() != 0:
+            self.dash_dir = self.dash_dir.normalize()
+
+        self.dash_end_time = pg.time.get_ticks() + 300  # shorter dash
+        self.dash_cd.start()
+
+
+
+
+
+    def update_boss_attacks(self):
+        # Only bosses attack
+        if self.power < 100:
+            return
+
+        # Phase change at 50% HP
+        if self.health <= self.max_health * 0.5:
+            self.dash_cd.cooldown = 3500   # more frequent dash
+        else:
+            self.dash_cd.cooldown = 6000   # normal dash
+
+        if not self.boss_attack_cd.ready():
+            return
+
+        if not self.boss_attack_cd.ready():
+            return
+
+        attack = random.choice([
+            "wide_shot",
+            "circle",
+            "ground_zone",
+            "dash"
+        ])
+
+        if attack == "wide_shot":
+            self.wide_shot_attack()
+
+        elif attack == "circle":
+            self.circle_attack()
+
+        elif attack == "ground_zone":
+            self.ground_zone_attack()
+
+        elif attack == "dash":
+            self.dash_attack()
+
+        self.boss_attack_cd.start()
+
 
 
     def draw(self, surface):
@@ -855,9 +1006,25 @@ class Mob(Sprite):
         self.collide_with_mobs('x')
         self.collide_with_mobs('y')
 
-        self.break_walls_if_stuck(self.game.dt)
+        # self.break_walls_if_stuck(self.game.dt)
 
- 
+        if self.is_boss:
+            self.update_boss_attacks()
+
+        if self.dashing:
+            self.pos += self.dash_dir * self.dash_speed
+            self.rect.center = self.pos
+
+            if self.rect.colliderect(self.game.player.rect):
+                self.game.player.health -= 15
+                self.dashing = False
+
+            if pg.time.get_ticks() >= self.dash_end_time:
+                self.dashing = False
+
+
+
+        
 class Coin(Sprite):
     def __init__(self, game, x, y):
         self.game = game
@@ -1120,6 +1287,117 @@ class Water_Shot(Sprite):
             mob.pos += knock_dir * self.knockback
 
             self.kill()
+
+
+class Boss_Projectile(Sprite):
+    def __init__(self, game, x, y, direction, speed=6, damage=8):
+        self.game = game
+        self.groups = game.all_sprites, game.all_projectiles
+        Sprite.__init__(self, self.groups)
+
+        self.image = game.projectile_img
+        self.rect = self.image.get_rect(center=(x, y))
+
+        self.pos = vec(x, y)
+        self.vel = direction.normalize() if direction.length() != 0 else vec(1, 0)
+
+        self.speed = speed
+        self.damage = damage
+
+    def update(self):
+        self.pos += self.vel * self.speed
+        self.rect.center = self.pos
+
+        # wall collision
+        if pg.sprite.spritecollide(self, self.game.all_walls, False):
+            self.kill()
+
+        # hit player
+        if self.rect.colliderect(self.game.player.rect):
+            self.game.player.health -= self.damage
+            self.kill()
+
+
+class Boss_Aura_Effect(Sprite):
+    def __init__(self, game, boss, radius=60, damage=10, duration=500):
+        self.game = game
+        self.groups = game.all_sprites
+        super().__init__(self.groups)
+
+        self.boss = boss
+        self.radius = radius
+        self.damage = damage
+        self.spawn_time = pg.time.get_ticks()
+        self.duration = duration
+
+        self.image = pg.Surface((radius * 2, radius * 2), pg.SRCALPHA)
+        pg.draw.circle(self.image, (255, 80, 80, 120), (radius, radius), radius)
+        self.rect = self.image.get_rect(center=boss.rect.center)
+
+    def update(self):
+        if not self.boss.alive():
+            self.kill()
+            return
+
+        self.rect.center = self.boss.rect.center
+
+        if self.rect.colliderect(self.game.player.rect):
+            self.game.player.health -= self.damage
+
+        if pg.time.get_ticks() - self.spawn_time >= self.duration:
+            self.kill()
+
+
+
+class Boss_Damage_Zone(pg.sprite.Sprite):
+    def __init__(
+        self,
+        game,
+        pos,
+        radius=40,
+        duration=2000,
+        damage=7,
+        tick_rate=150
+    ):
+        self.game = game
+        self.groups = game.all_sprites, game.boss_attacks
+        super().__init__(self.groups)
+
+        self.radius = radius
+        self.damage = damage
+        self.tick_rate = tick_rate
+
+        self.spawn_time = pg.time.get_ticks()
+        self.last_damage_time = 0
+        self.duration = duration
+
+        self.image = pg.Surface((radius * 2, radius * 2), pg.SRCALPHA)
+        pg.draw.circle(
+            self.image,
+            (255, 80, 80, 120),
+            (radius, radius),
+            radius
+        )
+
+        self.rect = self.image.get_rect(center=pos)
+
+    def update(self):
+        now = pg.time.get_ticks()
+
+        # Remove after duration
+        if now - self.spawn_time >= self.duration:
+            self.kill()
+            return
+
+        # Damage player ONLY on cooldown
+        if self.rect.colliderect(self.game.player.rect):
+            if now - self.last_damage_time >= self.tick_rate:
+                self.game.player.health -= self.damage
+                self.last_damage_time = now
+
+
+
+
 
 # ------ POTIONS -------
 

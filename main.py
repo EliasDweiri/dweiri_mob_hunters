@@ -38,7 +38,8 @@
 # bosses can break blocks
 # speed potion goes away after 12 seconds - COMPLETED
 # mobs are killed when they are kicked out of the map
-
+# fix game loop when player dies
+# win screen
 
 # KEYS:
 
@@ -154,6 +155,7 @@ class Game:
         self.all_potions = pg.sprite.Group()
         self.potions = pg.sprite.Group()
         self.damage_numbers = pg.sprite.Group()
+        self.boss_attacks = pg.sprite.Group()
 
         # takes the map data and creates the appropriate object for each tile, map maker
         for row, tiles in enumerate(self.map.data):
@@ -323,13 +325,13 @@ class Game:
             self.spawn_mobs(1, 1) # self.spawn_mobs(  amount of mobs spawned , strength of the mobs  )
 
         elif self.wave == 2:
-            self.spawn_mobs(5, 1)
+            self.spawn_mobs(1, 1)
 
         elif self.wave == 3:
-            self.spawn_mobs(15, 1)
+            self.spawn_mobs(1, 1)
 
         elif self.wave == 4:
-            self.spawn_mobs(25, 1)
+            self.spawn_mobs(1, 1)
 
         elif self.wave == 5:
             self.spawn_mobs(1, 101) # boss mob, three digits for boss, but still considered power 1
