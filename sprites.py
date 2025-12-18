@@ -249,14 +249,14 @@ class Player(Sprite):
                 Axe(self.game, self)
                 self.axe_cd.start()
 
-
+        # staff
         if keys == pg.K_i and self.unlocked_weapons["staff"]:  # Key to use Staff
             # Only spawn a Staff if cooldown is ready AND no other Staff exists
             if self.staff_cd.ready() and not any(isinstance(s, Staff) for s in self.game.all_sprites):
                 Staff(self.game, self)   # Spawn the Staff
                 self.staff_cd.start()    # Start cooldown
 
-
+        # water shot
         if keys[pg.K_p] and self.water_cd.ready() and self.game.water_unlocked:
             direction = self.dir
 
@@ -265,12 +265,7 @@ class Player(Sprite):
             else:
                 direction = direction.normalize()
 
-            Water_Shot(
-                self.game,
-                self.rect.centerx,
-                self.rect.centery,
-                direction
-            )
+            Water_Shot(self.game, self.rect.centerx, self.rect.centery,direction)
             self.water_cd.start()
 
         # sword is found in events in main
@@ -281,37 +276,6 @@ class Player(Sprite):
             self.attacking = True
             # print("im attacking")
             self.weapon = Sword(self.game, self.rect.x, self.rect.y)
-            
-        
-
-    # USE THIS FOR POSSIBLE FIRE EFFECT
-    # class EffectTrail(Sprite):
-    #     def __init__(self, game, x, y):
-    #         self.game = game
-    #         self.groups = game.all_sprites
-    #         Sprite.__init__(self, self.groups)
-    #         self.image = pg.Surface(TILESIZE, pg.SRCALPHA)
-    #         self.alpha = 255
-    #         self.image.fill((255,255,255,255))
-    #         self.rect = self.image.get_rect()
-    #         self.cd = Cooldown(10)
-    #         self.rect.x = x
-    #         self.rect.y = y
-    #         # coin behavior
-    #         self.scale_x = 32
-    #         self.scale_y = 32
-    #     def update(self):
-    #         if self.alpha <= 10:
-    #             self.kill()
-    #         self.image.fill((255,255,255,self.alpha))
-            
-    #         if self.cd.ready():
-    #             self.scale_x -=1
-    #             self.scale_y -=1
-    #             print("I'm ready")
-    #             self.alpha -= 50
-    #             new_image = pg.transform.scale(self.image, (self.scale_x, self.scale_y))
-    #             self.image = new_image
 
     def get_dir(self):
         return self.vel
@@ -324,7 +288,7 @@ class Player(Sprite):
                 if self.vel.x > 0:
                     # detects if the wall is moveable
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         # moves if the wall is moveable
                         hits[0].vel.x += self.vel.x
                         if len(hits) > 1:
@@ -335,7 +299,7 @@ class Player(Sprite):
                 if self.vel.x < 0:
                     # detects if the wall is moveable
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         hits[0].vel.x += self.vel.x
                     else:
                         self.pos.x = hits[0].rect.right
@@ -348,7 +312,7 @@ class Player(Sprite):
                 if self.vel.y > 0:
                     # detects if the wall is moveable
                     if hits[0].state == "moveable":
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         # moves if the wall is moveable
                         hits[0].vel.y += self.vel.y
                         if len(hits) > 1:
@@ -359,7 +323,7 @@ class Player(Sprite):
                 if self.vel.y < 0:
                     if hits[0].state == "moveable":
                         # detects if the wall is moveable
-                        print("i hit a moveable block...")
+                        # print("i hit a moveable block...")
                         hits[0].vel.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -382,7 +346,7 @@ class Player(Sprite):
                 self.health -= damage
                 self.hit_cd.start()
 
-                DamageNumber(self.game, self.rect.centerx, self.rect.centery, damage)
+                Damage_Number(self.game, self.rect.centerx, self.rect.centery, damage)
 
                 # red screen flash
                 self.damage_overlay_alpha = self.damage_overlay_max_alpha
@@ -392,14 +356,12 @@ class Player(Sprite):
 
         for coin in coin_hits:
             self.coins += 1
-            print(self.coins)
+            # print(self.coins)
 
 
     def update(self):
-        # self.EffectTrail
         self.get_keys()
 
-        # self.animate() COME BACK TO THIS
         # moves the player
         self.pos += self.vel
         self.rect.x = self.pos.x
@@ -445,17 +407,6 @@ class Player(Sprite):
             if self.damage_overlay_alpha < 0:
                 self.damage_overlay_alpha = 0
 
-
-        # if not self.cd.ready():
-        #     self.image_inv = self.game.player_img
-        #     # self.rect = self.image.get_rect()
-        #     # print("not ready")
-        # else:
-        #     self.image = self.game.player_img
-        #     # self.rect = self.image.get_rect()
-        #     # print("ready")
-
-
     def apply_speed_boost(self, amount, duration):
         self.speed_boost_active = True
         self.speed_boost_amount = amount
@@ -468,7 +419,8 @@ class Player(Sprite):
         self.health_amount = amount
         self.health += amount
 
-class DamageNumber(pg.sprite.Sprite):
+# a little number that shows how much damage you just took
+class Damage_Number(pg.sprite.Sprite):
     def __init__(self, game, x, y, damage):
         self.game = game
         self.groups = game.all_sprites, game.damage_numbers
@@ -522,9 +474,7 @@ class Staff(Sprite):
         self.spin_speed = 500         # degrees per second (how fast it orbits)
 
         # Extra offset to make the staff point outward properly
-        # (tweak as needed; 0, 90, 180, etc.)
         self.orientation_offset = 32
-        # print("spinnging staff created")
 
     def update(self):
 
@@ -537,21 +487,19 @@ class Staff(Sprite):
             self.kill()
             return
         
-        # 2. Compute where the staff's pivot (hilt) should be in world space
-        #    Orbit in a circle around the player's center
+        # Compute where the staff's pivot (hilt) should be in world space
+        # Orbit in a circle around the player's center
         orbit_offset = pg.math.Vector2(self.orbit_radius, 0).rotate(self.angle)
         staff_pivot_world = self.owner.pos + pg.math.Vector2(16, 16) + orbit_offset
-        # 3. Rotate the staff image around its own pivot (hilt)
+        # Rotate the staff image around its own pivot (hilt)
         image_angle = -self.angle + self.orientation_offset
         self.image = pg.transform.rotate(self.base_image, image_angle)
     
-        # 4. Rotate the pivot->center offset by the same angle so the rect lines up
+        # Rotate the pivot->center offset by the same angle so the rect lines up
         rotated_pivot_to_center = self.pivot_to_center.rotate(image_angle)
 
-        # 5. Final sprite center = pivot_world + rotated offset
+        # Final sprite center = pivot_world + rotated offset
         self.rect = self.image.get_rect(center=staff_pivot_world + rotated_pivot_to_center)
-
-
 
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
@@ -706,10 +654,10 @@ class Mob(Sprite):
             self.image = pg.Surface((64, 64))
             self.image = self.game.mob_boss1_img
             # self.image.fill(BLACK) # 
-            self.max_health = 800
+            self.max_health = 600
             self.health = self.max_health
             self.damage = 20
-            self.speed = 5
+            self.speed = 3.5
         
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 102:
@@ -718,10 +666,10 @@ class Mob(Sprite):
             # self.image = self.game.mob_boss1_img
             # self.image.fill(BLACK)
             self.image = self.game.mob_boss2_img
-            self.max_health = 1000
+            self.max_health = 650
             self.health = self.max_health
             self.damage = 25
-            self.speed = 5.75
+            self.speed = 3.5
 
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 103:
@@ -730,10 +678,10 @@ class Mob(Sprite):
             # self.image = self.game.mob_boss1_img
             # self.image.fill(ORANGE) 
             self.image = self.game.mob_boss3_img
-            self.max_health = 1100
+            self.max_health = 700
             self.health = self.max_health
             self.damage = 30
-            self.speed = 6.5
+            self.speed = 4.25
 
         # 3 digit power to represent boss wave, power 1 Boss
         elif self.power == 104:
@@ -742,10 +690,10 @@ class Mob(Sprite):
             # self.image = self.game.mob_boss1_img
             # self.image.fill(GREY) 
             self.image = self.game.mob_boss4_img
-            self.max_health = 1200
+            self.max_health = 750
             self.health = self.max_health
             self.damage = 35
-            self.speed = 7.25
+            self.speed = 5
 
         # rect
         self.rect = self.image.get_rect()
@@ -808,26 +756,12 @@ class Mob(Sprite):
         spread = [-30, -15, 0, 15, 30]
 
         for angle in spread:
-            Boss_Projectile(
-                self.game,
-                self.rect.centerx,
-                self.rect.centery,
-                base_dir.rotate(angle),
-                damage=8
-            )
-
+            Boss_Projectile( self.game,self.rect.centerx,self.rect.centery,base_dir.rotate(angle),damage=8)
         self.wide_shot_cd.start()
-
 
     # circle around boss attack
     def circle_attack(self):
-        Boss_Aura_Effect(
-            self.game,
-            self,          # PASS THE BOSS SPRITE
-            radius=90,
-            damage=12,
-            duration=600
-        )
+        Boss_Aura_Effect(self.game,self,radius=90,damage=1,duration=600)
 
     # 6 circle attack
     def ground_zone_attack(self):
@@ -835,25 +769,10 @@ class Mob(Sprite):
         spacing = 80  # farther apart
 
         # spaces out the circles
-        offsets = [
-            vec(-spacing, 0),
-            vec(spacing, 0),
-            vec(0, -spacing),
-            vec(0, spacing),
-            vec(-spacing, -spacing),
-            vec(spacing, spacing),
-        ]
+        offsets = [vec(-spacing, 0),vec(spacing, 0),vec(0, -spacing),vec(0, spacing),vec(-spacing, -spacing),vec(spacing, spacing),]
 
         for offset in offsets:
-            Boss_Damage_Zone(
-                self.game,
-                center + offset,
-                radius=40,
-                duration=2200,
-                damage=7,
-                tick_rate=150
-            )
-
+            Boss_Damage_Zone(self.game,center + offset,radius=40,duration=2200,damage=7,tick_rate=150)
 
     # dash attack
     def dash_attack(self):
@@ -868,10 +787,6 @@ class Mob(Sprite):
 
         self.dash_end_time = pg.time.get_ticks() + 300  # shorter dash
         self.dash_cd.start()
-
-
-
-
 
     def update_boss_attacks(self):
         # Only bosses attack
@@ -890,12 +805,7 @@ class Mob(Sprite):
         if not self.boss_attack_cd.ready():
             return
 
-        attack = random.choice([
-            "wide_shot",
-            "circle",
-            "ground_zone",
-            "dash"
-        ])
+        attack = random.choice(["wide_shot","circle","ground_zone","dash"])
 
         if attack == "wide_shot":
             self.wide_shot_attack()
@@ -977,30 +887,21 @@ class Mob(Sprite):
                     if self.vel.y < 0:
                         self.pos.y = hit.rect.bottom
                     self.rect.y = self.pos.y
-    
-    # def collide_with_weapons(self):
-    #     hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
-    #     if hits == True:
-
-
-
 
     def update(self):
         if self.health <= 0:
             self.game.total_kills += 1
-            self.game.mob_kills += 1   # <-- add this
+            self.game.mob_kills += 1  
             self.kill()
         # mob behavior
         if self.game.player.pos.x > self.pos.x:
             self.vel.x = 1
         else:
             self.vel.x = -1
-            # print("I don't need to chase the player x")
         if self.game.player.pos.y > self.pos.y:
             self.vel.y = 1
         else:
             self.vel.y = -1
-            # print("I don't need to chase the player y")
         self.pos += self.vel * self.speed
         self.rect.x = self.pos.x
         self.collide_with_walls('x')
@@ -1010,8 +911,6 @@ class Mob(Sprite):
         # updating mob v mob collision
         self.collide_with_mobs('x')
         self.collide_with_mobs('y')
-
-        # self.break_walls_if_stuck(self.game.dt)
 
         if self.is_boss:
             self.update_boss_attacks()
@@ -1062,7 +961,7 @@ class Sword(Sprite):
 
         
     def update(self):
-        # updating the sprite based off of each direction
+        # updating the sprite based off of each direction the player goes
         if self.game.player.dir == vec(-1, 0):
             self.image = self.game.sword_left_img
         elif self.game.player.dir == vec(1, 0):
@@ -1108,16 +1007,13 @@ class Wall(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE[0]
         self.state = state
-        # print("wall created at", str(self.rect.x), str(self.rect.y))
     
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
                 if self.vel.x > 0:
-                    # print("a wall collided with a wall")
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.x += self.vel.x
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -1127,7 +1023,6 @@ class Wall(Sprite):
                         
                 if self.vel.x < 0:
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.x += self.vel.x
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -1140,9 +1035,7 @@ class Wall(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
                 if self.vel.y > 0:
-                    # print('wall y collide down')
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -1152,7 +1045,6 @@ class Wall(Sprite):
                         
                 if self.vel.y < 0:
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmovable":
@@ -1193,9 +1085,7 @@ class Indestructible_Wall(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
                 if self.vel.x > 0:
-                    # print("a wall collided with a wall")
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.x += self.vel.x
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -1205,7 +1095,6 @@ class Indestructible_Wall(Sprite):
                         
                 if self.vel.x < 0:
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.x += self.vel.x
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -1218,9 +1107,7 @@ class Indestructible_Wall(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
             if hits:
                 if self.vel.y > 0:
-                    # print('wall y collide down')
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmoveable":
@@ -1230,7 +1117,6 @@ class Indestructible_Wall(Sprite):
                         
                 if self.vel.y < 0:
                     if hits[0].state == "moveable":
-                        # print("i hit a moveable block...")
                         hits[0].pos.y += self.vel.y
                         if len(hits) > 1:
                             if hits[1].state == "unmovable":
@@ -1266,28 +1152,29 @@ class Water_Shot(Sprite):
         self.speed = 10
         self.damage = 20
 
+        # debugging
         self.vel = dir.normalize() if dir.length() != 0 else pg.math.Vector2(0, 0) # so the dir is never (0,0) or else it would crash
 
         self.knockback = 12
 
     def update(self):
-        #  MOVE
+        #  movement
         self.pos += self.vel * self.speed
         self.rect.center = self.pos
 
-        #  WALL COLLISION
+        #  wall collision
         if pg.sprite.spritecollide(self, self.game.all_breakable_walls, True):
             self.kill()
 
         if pg.sprite.spritecollide(self, self.game.all_walls, False):
             self.kill()
 
-        #  MOB DAMAGE
+        #  mob damage
         hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         for mob in hits:
             mob.health -= self.damage
 
-            #  KNOCKBACK
+            #  knockback
             knock_dir = (mob.pos - pg.math.Vector2(self.rect.center)).normalize()
             mob.pos += knock_dir * self.knockback
 
@@ -1322,9 +1209,9 @@ class Boss_Projectile(Sprite):
             self.game.player.health -= self.damage
             self.kill()
 
-
+# a circle of damage around the boss
 class Boss_Aura_Effect(Sprite):
-    def __init__(self, game, boss, radius=60, damage=10, duration=500):
+    def __init__(self, game, boss, radius=60, damage=1, duration=500):
         self.game = game
         self.groups = game.all_sprites
         super().__init__(self.groups)
@@ -1353,17 +1240,9 @@ class Boss_Aura_Effect(Sprite):
             self.kill()
 
 
-
+# multiple AOE spawned that disapear after 2 seconds
 class Boss_Damage_Zone(pg.sprite.Sprite):
-    def __init__(
-        self,
-        game,
-        pos,
-        radius=40,
-        duration=2000,
-        damage=7,
-        tick_rate=150
-    ):
+    def __init__(self,game,pos,radius=40,duration=2000,damage=7,tick_rate=150):
         self.game = game
         self.groups = game.all_sprites, game.boss_attacks
         super().__init__(self.groups)
@@ -1377,12 +1256,7 @@ class Boss_Damage_Zone(pg.sprite.Sprite):
         self.duration = duration
 
         self.image = pg.Surface((radius * 2, radius * 2), pg.SRCALPHA)
-        pg.draw.circle(
-            self.image,
-            (255, 80, 80, 120),
-            (radius, radius),
-            radius
-        )
+        pg.draw.circle(self.image,(255, 80, 80, 120),(radius, radius),radius) # the circle
 
         self.rect = self.image.get_rect(center=pos)
 
@@ -1394,17 +1268,13 @@ class Boss_Damage_Zone(pg.sprite.Sprite):
             self.kill()
             return
 
-        # Damage player ONLY on cooldown
+        # Damage player only on cooldown
         if self.rect.colliderect(self.game.player.rect):
             if now - self.last_damage_time >= self.tick_rate:
                 self.game.player.health -= self.damage
                 self.last_damage_time = now
 
-
-
-
-
-# ------ POTIONS -------
+# potions, just potions classes and sprites, potion mechanics are not found here
 
 class Speed_Potion(Sprite):
     def __init__(self, game, x, y):

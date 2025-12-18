@@ -319,22 +319,22 @@ class Game:
             self.clear_potions()
             self.spawn_wave()
  
-   
+   # if a mob outside the map it dies
     def all_mobs_dead(self):
         # Return True if NO mobs are alive and visible in the game area 
         for mob in self.all_mobs:
             if mob.alive():
                 # Check if mob is within the visible screen
                 if 0 <= mob.rect.centerx <= WIDTH and 0 <= mob.rect.centery <= HEIGHT:
-                    return False    # There is at least ONE valid mob alive
-        return True  # No live mobs found on-screen
+                    return False   
+        return True  
 
-
+    # potion clearing to declutter
     def clear_potions(self):
         for p in list(self.all_potions):
             p.kill()
 
-
+    # mob spawning
     def spawn_mobs(self, num, power):
         for i in range(num):
             Mob(self, randint(1,20), randint(1,20), power)
@@ -344,7 +344,7 @@ class Game:
         self.show_wave_countdown(self.wave)
         
 
-        # Then spawn the actual mobs
+        # wave system
         if self.wave == 1:
             self.spawn_mobs(1, 1) # self.spawn_mobs(  amount of mobs spawned , strength of the mobs  )
 
@@ -352,73 +352,73 @@ class Game:
             self.spawn_mobs(3, 1)
 
         elif self.wave == 3:
-            self.spawn_mobs(8, 1)
+            self.spawn_mobs(5, 1)
+
+        # elif self.wave == 4:
+        #     self.spawn_mobs(10, 1)
 
         elif self.wave == 4:
-            self.spawn_mobs(15, 1)
-
-        elif self.wave == 5:
             self.spawn_mobs(1, 101) # boss mob, three digits for boss, but still considered power 1
 
-        elif self.wave == 6:
+        elif self.wave == 5:
             self.sword_unlocked = True
             self.unlock_message = "SWORD UNLOCKED!"
             self.unlock_message_time = pg.time.get_ticks()
-
             self.spawn_mobs(1, 2)
-        elif self.wave == 7:
 
+        elif self.wave == 6:
             self.spawn_mobs(3, 2)
+
+        elif self.wave == 7:
+            self.spawn_mobs(5, 2)
+
         elif self.wave == 8:
+            self.spawn_mobs(10, 2)
 
-            self.spawn_mobs(8, 2)
+        # elif self.wave == 10:
+        #     self.spawn_mobs(1, 102) 
+
         elif self.wave == 9:
-
-            self.spawn_mobs(15, 2)
-        elif self.wave == 10:
-
-            self.spawn_mobs(1, 102) 
-        elif self.wave == 11:
             self.staff_unlocked = True
             self.unlock_message = "STAFF UNLOCKED!"
             self.unlock_message_time = pg.time.get_ticks()
             self.spawn_mobs(1, 3)
 
-        elif self.wave == 12:
+        elif self.wave == 10:
             self.spawn_mobs(3, 3)
 
-        elif self.wave == 13:
-            self.spawn_mobs(8, 3)
+        elif self.wave == 11:
+            self.spawn_mobs(5, 3)
 
-        elif self.wave == 14:
-            self.spawn_mobs(15, 3) 
+        # elif self.wave == 14:
+        #     self.spawn_mobs(10, 3) 
 
-        elif self.wave == 15:
+        elif self.wave == 12:
             self.spawn_mobs(1, 103) 
 
-        elif self.wave == 16:
+        elif self.wave == 13:
             self.axe_unlocked = True
             self.unlock_message = "AXE UNLOCKED!"
             self.unlock_message_time = pg.time.get_ticks()
             self.spawn_mobs(1, 4)
 
-        elif self.wave == 17:
+        elif self.wave == 14:
             self.spawn_mobs(3, 4)
 
-        elif self.wave == 18:
-            self.spawn_mobs(8, 4)
+        elif self.wave == 15:
+            self.spawn_mobs(5, 4)
 
-        elif self.wave == 19:
-            self.spawn_mobs(15, 4)
+        elif self.wave == 16:
+            self.spawn_mobs(10, 4)
 
-        elif self.wave == 20:
+        elif self.wave == 17:
             self.spawn_mobs(1, 104) 
 
-        elif self.wave == 21:
-            self.spawn_mobs(2, 101)
-            self.spawn_mobs(2, 102)
-            self.spawn_mobs(2, 103)
-            self.spawn_mobs(2, 104)
+        elif self.wave == 18:
+            self.spawn_mobs(1, 101)
+            self.spawn_mobs(1, 102)
+            self.spawn_mobs(1, 103)
+            self.spawn_mobs(1, 104)
         
 
         # advance to next wave
